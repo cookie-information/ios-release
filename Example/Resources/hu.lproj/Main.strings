@@ -1,0 +1,69 @@
+
+/* Class = "UILabel"; text = "Consent Given"; ObjectID = "1wA-yS-70O"; */
+"1wA-yS-70O.text" = "Megadott hozzájárulás ";
+
+/* Class = "UIButton"; normalTitle = "Sample identifier"; ObjectID = "2vI-Kz-ZBa"; */
+"2vI-Kz-ZBa.normalTitle" = "Minta azonosító";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "55D-fT-GNz"; */
+"55D-fT-GNz.text" = "Címke";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "5ow-HR-abs"; */
+"5ow-HR-abs.text" = "Címke";
+
+/* Class = "UIButton"; normalTitle = "FETCH"; ObjectID = "C47-2i-GsZ"; */
+"C47-2i-GsZ.normalTitle" = "Letöltés";
+
+/* Class = "UIButton"; normalTitle = "SEND"; ObjectID = "FVG-zX-RNu"; */
+"FVG-zX-RNu.normalTitle" = "Mentés";
+
+/* Class = "UILabel"; text = "Language"; ObjectID = "HM4-wA-MGx"; */
+"HM4-wA-MGx.text" = "Nyelv";
+
+/* Class = "UILabel"; text = "Identifier"; ObjectID = "I5r-s7-pdy"; */
+"I5r-s7-pdy.text" = "Azonosító";
+
+/* Class = "UIBarButtonItem"; title = "Item"; ObjectID = "JOv-qg-y0k"; */
+"JOv-qg-y0k.title" = "Elem";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "LqG-jy-gjb"; */
+"LqG-jy-gjb.text" = "Címke";
+
+/* Class = "UILabel"; text = "Consent Item Identifier"; ObjectID = "OPu-HX-quQ"; */
+"OPu-HX-quQ.text" = "Hozzájárulási elem azonosítója";
+
+/* Class = "UIBarButtonItem"; title = "Close"; ObjectID = "ZcT-ZY-hSP"; */
+"ZcT-ZY-hSP.title" = "Bezár";
+
+/* Class = "UIBarButtonItem"; title = "Item"; ObjectID = "aTw-e0-xLI"; */
+"aTw-e0-xLI.title" = "Elem";
+
+/* Class = "UILabel"; text = "Version"; ObjectID = "gA6-UA-3rK"; */
+"gA6-UA-3rK.text" = "Verzió";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "gAp-tM-qFk"; */
+"gAp-tM-qFk.text" = "Címke";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "h3R-e7-Dj9"; */
+"h3R-e7-Dj9.text" = "Címke";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "h8D-eY-ktD"; */
+"h8D-eY-ktD.text" = "Címke";
+
+/* Class = "UILabel"; text = "Consent Solution"; ObjectID = "pHy-9U-pnA"; */
+"pHy-9U-pnA.text" = "Egyetértési megoldás";
+
+/* Class = "UILabel"; text = "Long Text"; ObjectID = "rAw-Gt-YeD"; */
+"rAw-Gt-YeD.text" = "Hosszú leírás";
+
+/* Class = "UILabel"; text = "Item Identifier"; ObjectID = "uXt-qk-nwq"; */
+"uXt-qk-nwq.text" = "Elem azonosító";
+
+/* Class = "UILabel"; text = "Short Text"; ObjectID = "uaG-sQ-muM"; */
+"uaG-sQ-muM.text" = "Rövid leírás";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "xQN-Ck-p59"; */
+"xQN-Ck-p59.text" = "Címke";
+
+/* Class = "UILabel"; text = "Identifier"; ObjectID = "y2Y-zu-Eem"; */
+"y2Y-zu-Eem.text" = "Azonosító";

@@ -1,0 +1,122 @@
+{
+  "universalConsentSolutionVersionId": "00000000-0000-4000-8000-000000000000",
+  "universalConsentSolutionId": "9187d0f0-9e25-469b-9125-6a63b1b22b12",
+  "title": [
+      {
+        "language": "EN",
+        "text": "Privacy title"
+      }
+  ],
+  "description":  [
+      {
+        "language": "EN",
+        "text": "Privacy description"
+      }
+  ],
+  "templateTexts": {
+    "privacyCenterButton":  [
+      {
+        "language": "EN",
+        "text": "Privacy center button title"
+      }
+    ],
+    "rejectAllButton":  [
+      {
+        "language": "EN",
+        "text": "Reject all button title"
+      }
+    ],
+    "acceptAllButton":  [
+      {
+        "language": "EN",
+        "text": "Accept all button title"
+      }
+    ],
+    "acceptSelectedButton":  [
+      {
+        "language": "EN",
+        "text": "Accept selected button title"
+      }
+    ],
+    "savePreferencesButton":  [
+      {
+        "language": "EN",
+        "text": "Save preferences button title"
+      }
+    ],
+    "privacyCenterTitle":  [
+      {
+        "language": "EN",
+        "text": "Privacy center title"
+      }
+    ],
+    "privacyPreferencesTabLabel":  [
+      {
+        "language": "EN",
+        "text": "Privacy preferences tab"
+      }
+    ],
+    "poweredByCoiLabel":  [
+      {
+        "language": "EN",
+        "text": "Powered by Cookie Information"
+      }
+    ],
+    "consentPreferencesLabel":  [
+      {
+        "language": "EN",
+        "text": "Consent preferences label"
+      }
+    ]
+  },
+  "universalConsentItems": [
+    {
+      "universalConsentItemId": "a10853b5-85b8-4541-a9ab-fd203176bdce",
+      "required": true,
+      "type": "setting",
+      "translations": [
+        {
+          "language": "EN",
+          "shortText": "First consent item short text",
+          "longText": "First consent item long text"
+        }
+      ]
+    },
+    {
+      "universalConsentItemId": "ef7d8f35-fc1a-4369-ada2-c00cc0eecc4b",
+      "required": false,
+      "type": "setting",
+      "translations": [
+        {
+          "language": "EN",
+          "shortText": "Second consent item short text",
+          "longText": "Second consent item long text"
+        }
+      ]
+    },
+    {
+      "universalConsentItemId": "7d477dbf-5f88-420f-8dfc-2506907ebe07",
+      "required": true,
+      "type": "info",
+      "translations": [
+        {
+          "language": "EN",
+          "shortText": "Third consent item short text",
+          "longText": "Third consent item long text"
+        }
+      ]
+    },
+    {
+      "universalConsentItemId": "1d5920c7-c5d1-4c08-93cc-4238457d7a1f",
+      "required": true,
+      "type": "info",
+      "translations": [
+        {
+          "language": "EN",
+          "shortText": "Fourth consent item short text",
+          "longText": "Fourth consent item long text"
+        }
+      ]
+    }
+  ]
+}
