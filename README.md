@@ -1,4 +1,4 @@
-﻿
+
 # Mobile Consents SDK
 
 # Installation
@@ -43,7 +43,7 @@ If application's language is not available in translations, English will be used
 
 <img src="Documentation/privacyPopUp.png" width="300px">
 
-To show the Privacy Pop Up screen, use either `showPrivacyPopUp` (typically used in settings to allow for modification of the consent) or  `showPrivacyPopUpIfNeeded` (typically used at startup to ) method:
+To show the Privacy Pop Up screen, use either `showPrivacyPopUp` (typically used in settings to allow for modification of the consent) or  `showPrivacyPopUpIfNeeded` (typically used at startup to present the privacy screen conditionally. See more below) method:
 
 ```swift
 mobileConsentsSDK.showPrivacyPopUp() { settings in
@@ -70,7 +70,29 @@ The above function takes an optional completion block argument that should be us
 By default, the pop up is presented by top view controller of key window of the application.
 To change that, you can pass presenting view controller as an optional parameter.
 
+### Presenting the privacy pop-up conditionally
 
+The `showPrivacyPopUpIfNeeded` method is typically used to present the popup aftre app start (or at a point the developer deems appropriate). The method checks if a valid consent is already saved on the device and also checks if there are any updates on the Cookie Information server. In case there is no consent saved or the consent version is different from the one available on the server, the popup will be presented, otherwise only the completion closure is called. Using the `ignoreVersionChanges` parameter allows the developer to turn off the version checking mechanism and ignore consent version changes coming from the server.
+
+```swift
+        mobileConsentsSDK.showPrivacyPopUpIfNeeded(ignoreVersionChanges: true) { settings in
+         // handle results here
+        }
+```
+
+
+### Objective-C
+
+Just like in Swift, the same methods are used to display the privacy pop-up, only with a slight variation to reflect Objective-C naming conventions. 
+
+```Objective-C
+       [self.mobileConsents showPrivacyPopUpIfNeededOnViewController:self
+                                                         animated:YES
+                                             ignoreVersionChanges:NO
+                                                       completion:^(NSArray<UserConsent *> * _Nonnull) {
+        // Handle consents here
+    }];
+```
 
 ## Styling
 

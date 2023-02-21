@@ -3,8 +3,7 @@ import UIKit
 final class PrivacyPopUpViewController: UIViewController {
     private lazy var navigationBar: UINavigationBar = {
         let bar = UINavigationBar()
-        bar.prefersLargeTitles = true
-        bar.isTranslucent = false
+        bar.isTranslucent = true
         bar.delegate = self.viewModel
         bar.backgroundColor = .navigationBarbackground
         bar.items = [self.barItem]
@@ -15,25 +14,36 @@ final class PrivacyPopUpViewController: UIViewController {
         let item = UINavigationItem()
         item.leftBarButtonItem = UIBarButtonItem(title: "Accept selected", style: .plain, target: self, action: #selector(acceptSelected))
         item.rightBarButtonItem = UIBarButtonItem(title: "Accept all", style: .plain, target: self, action: #selector(acceptAll))
-        
         item.leftBarButtonItem?.tintColor = accentColor
         item.rightBarButtonItem?.tintColor = accentColor
         
         return item
     }()
     
+    private lazy var titleView: UILabel = {
+        let view = UILabel()
+        view.text = "Privacy"
+        view.adjustsFontForContentSizeCategory = true
+        view.font = UIFontMetrics(forTextStyle: .largeTitle).scaledFont(for: fontSet.largeTitle)
+        
+        return view
+    }()
+    
     private lazy var readModeButton: UIButton = {
         let btn = UIButton()
-        btn.setTitle("Read more >", for: .normal)
+        btn.setTitle("Read more", for: .normal)
+        btn.tintColor = accentColor
         btn.setTitleColor(accentColor, for: .normal)
         btn.addTarget(self, action: #selector(openProvacyPolicy), for: .touchUpInside)
-        btn.titleLabel?.font = fontSet.bold
+        btn.titleLabel?.font = UIFontMetrics(forTextStyle: .body).scaledFont(for: fontSet.bold)
+        btn.titleLabel?.adjustsFontForContentSizeCategory = true
         return btn
     }()
     
     private lazy var privacyDescription: UILabel = {
         let label = UILabel()
-        label.font = fontSet.bold
+        label.font = UIFontMetrics(forTextStyle: .body).scaledFont(for: fontSet.bold)
+        label.adjustsFontForContentSizeCategory = true
         label.numberOfLines = 0
         return label
     }()
@@ -80,8 +90,9 @@ final class PrivacyPopUpViewController: UIViewController {
         tableView.rowHeight = UITableView.automaticDimension
         setupViewModel()
         setupLayout()
+
     }
-    
+        
     private func setupLayout() {
         view.backgroundColor = .popUpBackground
         
@@ -96,7 +107,9 @@ final class PrivacyPopUpViewController: UIViewController {
         view.addSubview(privacyDescription)
         view.addSubview(readModeButton)
         view.addSubview(poweredByLabel)
+        view.addSubview(titleView)
         
+        titleView.translatesAutoresizingMaskIntoConstraints = false
         readModeButton.translatesAutoresizingMaskIntoConstraints = false
         navigationBar.translatesAutoresizingMaskIntoConstraints = false
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -109,14 +122,19 @@ final class PrivacyPopUpViewController: UIViewController {
             navigationBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             navigationBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             
-            privacyDescription.topAnchor.constraint(equalTo: navigationBar.bottomAnchor, constant: 15),
+            titleView.topAnchor.constraint(equalTo: navigationBar.bottomAnchor, constant: 15),
+            titleView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
+            titleView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            
+            privacyDescription.topAnchor.constraint(equalTo: titleView.bottomAnchor, constant: 15),
             privacyDescription.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
             privacyDescription.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             
             readModeButton.topAnchor.constraint(equalTo: privacyDescription.bottomAnchor, constant: 15),
             readModeButton.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
+            readModeButton.heightAnchor.constraint(equalToConstant: readModeButton.titleLabel?.font.pointSize ?? 14),
             
-            tableView.topAnchor.constraint(equalTo: readModeButton.bottomAnchor),
+            tableView.topAnchor.constraint(equalTo: readModeButton.bottomAnchor, constant: 10),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: poweredByLabel.topAnchor, constant: -2),
@@ -141,13 +159,18 @@ final class PrivacyPopUpViewController: UIViewController {
             guard let self = self else { return }
             self.sections = data.sections
             self.tableView.reloadData()
-            self.barItem.title = data.title
-            self.navigationBar.largeTitleTextAttributes = [.font: self.fontSet.largeTitle]
+            self.titleView.text = data.title
+            
             self.barItem.leftBarButtonItem?.title = data.saveSelectionButtonTitle
             self.barItem.rightBarButtonItem?.title = data.acceptAllButtonTitle
             self.privacyDescription.text = data.privacyDescription
             self.privacyPolicyLongtext = data.privacyPolicyLongtext
-            self.readModeButton.setTitle("\(data.readMoreButton) >", for: .normal)
+            self.readModeButton.setTitle("\(data.readMoreButton) ", for: .normal)
+            let chevron = UIImage(named: "chevron", in: .module, compatibleWith: nil)
+            self.readModeButton.setImage(chevron, for: .normal)
+            self.readModeButton.semanticContentAttribute = .forceRightToLeft
+            self.view.accessibilityElements = [self.titleView, self.privacyDescription, self.readModeButton, self.tableView, self.navigationBar]
+
         }
         
         viewModel.onLoadingChange = { [weak self, activityIndicator] isLoading in
@@ -210,3 +233,4 @@ extension String {
         self = NSLocalizedString(key, bundle: Bundle(for: PrivacyPopUpViewController.self), comment: "")
     }
 }
+

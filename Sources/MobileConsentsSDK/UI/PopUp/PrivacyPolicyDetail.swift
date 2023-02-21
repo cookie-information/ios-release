@@ -13,7 +13,7 @@ internal class PrivacyPolicyDetail: UIViewController {
     
     private lazy var barItem: UINavigationItem = {
         let item = UINavigationItem()
-        item.leftBarButtonItem = UIBarButtonItem(title: "Close", style: .plain, target: self, action: #selector(close))
+        item.leftBarButtonItem = UIBarButtonItem(image: UIImage(named: "xmark", in: .module, compatibleWith: nil), style: .plain, target: self, action: #selector(close))
         item.leftBarButtonItem?.tintColor = accentColor
         
         item.title = "Privacy policy"

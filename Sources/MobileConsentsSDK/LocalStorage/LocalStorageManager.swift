@@ -5,13 +5,15 @@ protocol LocalStorageManagerProtocol {
     var consents: [String: UserConsent] { get }
     func removeUserId()
     func addConsent(consentItemId: String, consent: UserConsent)
-    func addConsentsArray(_ consentsArray: [UserConsent])
+    func addConsentsArray(_ consentsArray: [UserConsent], versionId: String)
     func clearAll()
 }
 
 struct LocalStorageManager: LocalStorageManagerProtocol {
+    
     private let userIdKey = "com.MobileConsents.userIdKey"
     private let consentsKey = "com.MobileConsents.consentsKey"
+    private let consentSolutionVersionIdKey = "com.MobileConsents.consentsVersionIdKey"
     private let userDefaults: UserDefaults
     
     init(userDefaults: UserDefaults = UserDefaults.standard) {
@@ -23,6 +25,11 @@ struct LocalStorageManager: LocalStorageManagerProtocol {
             return generateAndStoreUserId()
         }
         return userId
+    }
+    
+    internal var versionId: String? {
+        let id: String? = userDefaults.get(forKey: consentSolutionVersionIdKey)
+        return id
     }
     
     private func generateAndStoreUserId() -> String {
@@ -63,8 +70,9 @@ struct LocalStorageManager: LocalStorageManagerProtocol {
         
     }
     
-    func addConsentsArray(_ consentsArray: [UserConsent]) {
+    func addConsentsArray(_ consentsArray: [UserConsent], versionId: String) {
         var consents = [String: Any]()
+        userDefaults.set(versionId, forKey: consentSolutionVersionIdKey)
         consentsArray.forEach { consent in
             do {
                 let id = consent.consentItem.id

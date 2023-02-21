@@ -8,22 +8,23 @@ final class SwitchTableViewCell: BaseTableViewCell {
     
     private lazy var titleView: UILabel =  {
         let label = UILabel()
+        label.adjustsFontForContentSizeCategory = true
         label.font = .systemFont(ofSize: 17, weight: .regular)
         return label
     }()
     
     private lazy var descriptionView: UILabel = {
         let label = UILabel()
+        label.adjustsFontForContentSizeCategory = true
         label.font = .systemFont(ofSize: 14)
         label.numberOfLines = 0
         label.isEnabled = false
-
+        
         return label
     }()
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        
         setup()
     }
     
@@ -45,9 +46,12 @@ final class SwitchTableViewCell: BaseTableViewCell {
         self.viewModel = viewModel
         
         titleView.text = viewModel.title
-        titleView.font = viewModel.fontSet.body.withSize(17)
+        titleView.font = UIFontMetrics(forTextStyle: .title3).scaledFont(for: viewModel.fontSet.body.withSize(17))
+        titleView.accessibilityLabel = "\(viewModel.title) \n \(viewModel.description)"
+
+        
         descriptionView.text = viewModel.description
-        descriptionView.font = viewModel.fontSet.body
+        descriptionView.font = UIFontMetrics(forTextStyle: .body).scaledFont(for: viewModel.fontSet.body)
         setIsSelected(viewModel.isRequired || viewModel.isSelected) //required settings will be selected by default
         uiSwitch.onTintColor = viewModel.accentColor
         uiSwitch.isEnabled = !viewModel.isRequired
@@ -77,6 +81,7 @@ final class SwitchTableViewCell: BaseTableViewCell {
     }
     
     private func setup() {
+        accessibilityElements = [titleView, uiSwitch]
         selectionStyle = .none
         self.isSeparatorHidden = false
         uiSwitch.addTarget(self, action: #selector(switchValueChanged), for: .valueChanged)
@@ -89,6 +94,7 @@ final class SwitchTableViewCell: BaseTableViewCell {
         uiSwitch.translatesAutoresizingMaskIntoConstraints = false
         titleView.translatesAutoresizingMaskIntoConstraints = false
         descriptionView.translatesAutoresizingMaskIntoConstraints = false
+        
         
         NSLayoutConstraint.activate([
             titleView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 16),
