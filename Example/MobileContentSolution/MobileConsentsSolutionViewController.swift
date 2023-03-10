@@ -75,6 +75,10 @@ final class MobileConsentsSolutionViewController: BaseViewController {
             self.viewModel.showPrivacyPopUp(style: .pink)
         }))
         
+        alert.addAction(UIAlertAction(title: "Custom view controller", style: .default, handler: { (_) in
+            self.viewModel.showPrivacyPopUp(style: .customController)
+        }))
+        
         self.present(alert, animated: true, completion: {
             print("completion block")
         })

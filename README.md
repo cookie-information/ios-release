@@ -57,6 +57,10 @@ mobileConsentsSDK.showPrivacyPopUp() { settings in
                     if consent.purposeDescription.lowercased() == "age consent" {
                         // handle user defined consent items such as age consent
                     }
+                    if consent.consentItem.id == "<UUID of consent item comes here>" {
+                      // handle user defined consent items such as age consent based on UUID
+                    }
+
                 @unknown default:
                     break
                 }
@@ -124,7 +128,55 @@ By default, Privacy Pop-up and Privacy Center use application's current langauge
 
 You can override langauge used by the screens by initializing SDK with custom langauge code. See the example app for more details.
 
+## Building your custom UI
 
+In case the built-in popup screen is too limiting for you, you can choose to build your own custom screen, while still using the data and communication built into the SDK.
+
+To start you need to create a new class inheriting from `UIViewController` and conforming to `PrivacyPopupProtocol`. This protocol requires that you implement an initializer that takes a `viewModel` argument. This viewModel is passed in by the SDK and contains the data and methods necessary to display and save consents.
+
+After setting up your UI components and constraints you should set up the viewModel callback functions: 
+- `onDataLoaded: ((PrivacyPopUpData) -> Void)?` - which allows you to receive the data and configure the UI components. It is useful to keep a reference to the viewModel, because it contains functions to modify the state of the consent (consent given, or revoked), to save the consent, reject optional, or accept selection.
+- `onError: ((ErrorAlertModel) -> Void)?` - to receive notifications about errors
+- `onLoadingChange: ((Bool) -> Void)?` - to receive notifications about changes in the loading state (useful if you're using a spinner or similar progress indicator)
+
+```swift
+private func setupViewModel() {
+  viewModel.onDataLoaded = { [weak self] data in
+    guard let self = self else { return }
+    self.titleLabel.text = data.title
+    self.data = data
+    self.table.reloadData()
+  }
+  viewModel.viewDidLoad()
+}
+```
+
+To allow for the user to interact with the consent screen you'll need buttons that accept or reject the data collection/processing categories. In order to do so you'll need to create the buttons and make them call `viewModel.acceptAll`, `viewModel.acceptSelected` or `viewModel.rejectAll`. 
+
+Once you're ready with the view controller, you should use the `showPrivacyPopUp` or `showPrivacyPopUpIfNeeded` methods with the customViewType argument: 
+
+```swift
+mobileConsentsSDK.showPrivacyPopUp(customViewType: CustomController.self) { settings in
+  settings.forEach { consent in
+    switch consent.purpose {
+    case .statistical: break
+    case .functional: break
+    case .marketing: break
+    case .necessary: break
+    case .custom:
+    if consent.purposeDescription.lowercased() == "age consent" {
+    // handle user defined consent items such as age consent based on the name
+    }
+    if consent.consentItem.id == "<UUID of consent item comes here>" {
+    // handle user defined consent items such as age consent based on UUID
+    }
+   } 
+ }
+}
+
+```
+
+To see a more complete implementation, please refer to the Example app and look for `CustomPopup.swift`
 ## Sending Consent to server manually
 
 If you want to send consent to the server, first you have to create `Consent` object which structure looks like this:

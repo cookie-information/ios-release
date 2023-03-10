@@ -1,16 +1,16 @@
 import UIKit
 
-final class PopUpConsentViewModel: SwitchCellViewModel {
-    var fontSet: FontSet
-    var accentColor: UIColor
-    let title: String
-    let description: String
-    let isRequired: Bool
+public final class PopUpConsentViewModel: SwitchCellViewModel {
+    public var fontSet: FontSet
+    public var accentColor: UIColor
+    public let title: String
+    public let description: String
+    public let isRequired: Bool
     
-    var isSelected: Bool { consentItemProvider.isConsentItemSelected(id: id)  || consentItemProvider.isConsentItemRequired(id: id)}
-    var onUpdate: ((SwitchCellViewModel) -> Void)?
+    public var isSelected: Bool { consentItemProvider.isConsentItemSelected(id: id)  || consentItemProvider.isConsentItemRequired(id: id)}
+    public var onUpdate: ((SwitchCellViewModel) -> Void)?
     
-    private let id: String
+    public let id: String
     private let consentItemProvider: ConsentItemProvider
     private let notificationCenter: NotificationCenter
     
@@ -50,25 +50,25 @@ final class PopUpConsentViewModel: SwitchCellViewModel {
         }
     }
     
-    func selectionDidChange(_ isSelected: Bool) {
+    public func selectionDidChange(_ isSelected: Bool) {
         consentItemProvider.markConsentItem(id: id, asSelected: isSelected)
     }
 }
 
-final class PopUpConsentsSection: Section {
-    static func registerCells(in tableView: UITableView) {
+public final class PopUpConsentsSection: Section {
+    public static func registerCells(in tableView: UITableView) {
         tableView.register(SwitchTableViewCell.self)
     }
     
-    private let viewModels: [SwitchCellViewModel]
+    public let viewModels: [SwitchCellViewModel]
     
-    init(viewModels: [SwitchCellViewModel]) {
+    public init(viewModels: [SwitchCellViewModel]) {
         self.viewModels = viewModels
     }
     
-    var numberOfCells: Int { viewModels.count }
+    public var numberOfCells: Int { viewModels.count }
     
-    func cell(for indexPath: IndexPath, in tableView: UITableView) -> UITableViewCell {
+    public func cell(for indexPath: IndexPath, in tableView: UITableView) -> UITableViewCell {
         let cell: SwitchTableViewCell = tableView.dequeueReusableCell(for: indexPath)
         let viewModel = viewModels[indexPath.row]
         

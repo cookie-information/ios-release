@@ -26,6 +26,8 @@
 		935E138628F955EB00BAF8E3 /* SavedDataViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 935E137028F955EB00BAF8E3 /* SavedDataViewController.swift */; };
 		935E138A28F9564300BAF8E3 /* MobileConsentsSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 935E138928F9564300BAF8E3 /* MobileConsentsSDK */; };
 		935E138C290A6BDA00BAF8E3 /* WebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 935E138B290A6BDA00BAF8E3 /* WebViewController.swift */; };
+		9377B05329BA020200742C64 /* MobileConsentsSolutionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 935E136928F955EB00BAF8E3 /* MobileConsentsSolutionViewModel.swift */; };
+		9377B05629BA0A2500742C64 /* CustomPopup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9377B05429BA0A2200742C64 /* CustomPopup.swift */; };
 		93BE518F296EB1E5000DA679 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 93BE518E296EB1E5000DA679 /* AppDelegate.m */; };
 		93BE5192296EB1E5000DA679 /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 93BE5191296EB1E5000DA679 /* SceneDelegate.m */; };
 		93BE5195296EB1E5000DA679 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 93BE5194296EB1E5000DA679 /* ViewController.m */; };
@@ -75,6 +77,7 @@
 		935E137028F955EB00BAF8E3 /* SavedDataViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SavedDataViewController.swift; sourceTree = "<group>"; };
 		935E138828F9563100BAF8E3 /* mobileconsentsios */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = mobileconsentsios; path = ..; sourceTree = "<group>"; };
 		935E138B290A6BDA00BAF8E3 /* WebViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewController.swift; sourceTree = "<group>"; };
+		9377B05429BA0A2200742C64 /* CustomPopup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomPopup.swift; sourceTree = "<group>"; };
 		93BE518B296EB1E5000DA679 /* ObjC example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ObjC example.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		93BE518D296EB1E5000DA679 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		93BE518E296EB1E5000DA679 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -207,6 +210,7 @@
 		935E136828F955EB00BAF8E3 /* MobileContentSolution */ = {
 			isa = PBXGroup;
 			children = (
+				9377B04E29B9F34500742C64 /* Custom View */,
 				935E136928F955EB00BAF8E3 /* MobileConsentsSolutionViewModel.swift */,
 				935E136A28F955EB00BAF8E3 /* MobileConsentsSolutionViewController.swift */,
 			);
@@ -237,6 +241,14 @@
 				935E138828F9563100BAF8E3 /* mobileconsentsios */,
 			);
 			name = Packages;
+			sourceTree = "<group>";
+		};
+		9377B04E29B9F34500742C64 /* Custom View */ = {
+			isa = PBXGroup;
+			children = (
+				9377B05429BA0A2200742C64 /* CustomPopup.swift */,
+			);
+			path = "Custom View";
 			sourceTree = "<group>";
 		};
 		93BE518C296EB1E5000DA679 /* ObjC example */ = {
@@ -337,7 +349,7 @@
 					};
 					9B8E95B32519C8AF001DF8BD = {
 						CreatedOnToolsVersion = 11.7;
-						LastSwiftMigration = 1400;
+						LastSwiftMigration = 1420;
 					};
 				};
 			};
@@ -410,6 +422,7 @@
 				935E137328F955EB00BAF8E3 /* MobileConsentError.swift in Sources */,
 				935E138228F955EB00BAF8E3 /* MobileConsentsSolutionViewController.swift in Sources */,
 				935E137728F955EB00BAF8E3 /* Collection+Extensions.swift in Sources */,
+				9377B05629BA0A2500742C64 /* CustomPopup.swift in Sources */,
 				935E138C290A6BDA00BAF8E3 /* WebViewController.swift in Sources */,
 				935E138528F955EB00BAF8E3 /* SavedItemTableViewCell.swift in Sources */,
 			);
@@ -423,6 +436,7 @@
 				93BE518F296EB1E5000DA679 /* AppDelegate.m in Sources */,
 				93BE51A0296EB1E6000DA679 /* main.m in Sources */,
 				93BE5192296EB1E5000DA679 /* SceneDelegate.m in Sources */,
+				9377B05329BA020200742C64 /* MobileConsentsSolutionViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

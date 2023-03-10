@@ -1,15 +1,15 @@
 import Foundation
 import UIKit
 
-struct PrivacyPopUpData {
-    let title: String
-    let sections: [Section]
-    let acceptAllButtonTitle: String
-    let saveSelectionButtonTitle: String
+public struct PrivacyPopUpData {
+    public let title: String
+    public let sections: [PopUpConsentsSection]
+    public let acceptAllButtonTitle: String
+    public let saveSelectionButtonTitle: String
 
-    let privacyDescription: String
-    let privacyPolicyLongtext: String
-    let readMoreButton: String
+    public let privacyDescription: String
+    public let privacyPolicyLongtext: String
+    public let readMoreButton: String
 }
 
 protocol PrivacyPopUpViewModelProtocol: UINavigationBarDelegate {
@@ -22,12 +22,12 @@ protocol PrivacyPopUpViewModelProtocol: UINavigationBarDelegate {
     func acceptSelected()
 }
 
-final class PrivacyPopUpViewModel: NSObject, PrivacyPopUpViewModelProtocol {
-    var onLoadingChange: ((Bool) -> Void)?
-    var onDataLoaded: ((PrivacyPopUpData) -> Void)?
-    var onError: ((ErrorAlertModel) -> Void)?
-    var accentColor: UIColor
-    var fontSet: FontSet
+public final class PrivacyPopUpViewModel: NSObject, PrivacyPopUpViewModelProtocol {
+    public var onLoadingChange: ((Bool) -> Void)?
+    public var onDataLoaded: ((PrivacyPopUpData) -> Void)?
+    public var onError: ((ErrorAlertModel) -> Void)?
+    public var accentColor: UIColor
+    public var fontSet: FontSet
     var router: RouterProtocol?
     
     private let consentSolutionManager: ConsentSolutionManagerProtocol
@@ -37,7 +37,7 @@ final class PrivacyPopUpViewModel: NSObject, PrivacyPopUpViewModelProtocol {
         self.fontSet = fontSet
     }
     
-    func viewDidLoad() {
+    public func viewDidLoad() {
         loadConsentSolution()
     }
     
@@ -146,7 +146,7 @@ extension PrivacyPopUpViewModel: PopUpButtonViewModelDelegate {
     }
     
     @objc
-    func acceptAll() {
+    public func acceptAll() {
         onLoadingChange?(true)
         consentSolutionManager.acceptAllConsentItems { [weak self] error in
             self?.handlePostingConsent(buttonType: .acceptAll, error: error)
@@ -154,7 +154,15 @@ extension PrivacyPopUpViewModel: PopUpButtonViewModelDelegate {
     }
     
     @objc
-    func acceptSelected() {
+    public func rejectAll() {
+        onLoadingChange?(true)
+        consentSolutionManager.rejectAllConsentItems { [weak self] error in
+            self?.handlePostingConsent(buttonType: .rejectAll, error: error)
+        }
+    }
+    
+    @objc
+    public func acceptSelected() {
         onLoadingChange?(true)
         consentSolutionManager.acceptSelectedConsentItems { [weak self] error in
             self?.handlePostingConsent(buttonType: .acceptSelected, error: error)
