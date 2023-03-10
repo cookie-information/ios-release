@@ -1,6 +1,6 @@
 import UIKit
 
-protocol Section {
+public protocol Section {
     static func registerCells(in tableView: UITableView)
     
     var numberOfCells: Int { get }
@@ -12,7 +12,7 @@ protocol Section {
 extension Section {
     var numberOfCells: Int { 1 }
     
-    func didSelectCell(at indexPath: IndexPath, in tableView: UITableView) {
+    public func didSelectCell(at indexPath: IndexPath, in tableView: UITableView) {
         tableView.deselectRow(at: indexPath, animated: false)
     }
 }

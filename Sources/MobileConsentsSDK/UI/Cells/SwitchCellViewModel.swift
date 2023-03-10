@@ -1,6 +1,6 @@
 import UIKit
 
-protocol SwitchCellViewModel: AnyObject {
+public protocol SwitchCellViewModel: AnyObject {
     var title: String { get }
     var description: String { get }
     var isRequired: Bool { get }
@@ -9,5 +9,4 @@ protocol SwitchCellViewModel: AnyObject {
     var accentColor: UIColor { get set }
     var fontSet: FontSet { get set }
     func selectionDidChange(_ isSelected: Bool)
-    
 }

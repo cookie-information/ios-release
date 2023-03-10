@@ -1,6 +1,6 @@
 import UIKit
 
-internal class PrivacyPolicyDetail: UIViewController {
+public class PrivacyPolicyDetail: UIViewController {
     
     private lazy var navigationBar: UINavigationBar = {
         let bar = UINavigationBar()
@@ -31,7 +31,7 @@ internal class PrivacyPolicyDetail: UIViewController {
     
     private var accentColor: UIColor
     
-    init(text: String, accentColor: UIColor) {
+    public init(text: String, accentColor: UIColor) {
         self.accentColor = accentColor
         super.init(nibName: nil, bundle: nil)
         webView.htmlText = text
@@ -41,7 +41,7 @@ internal class PrivacyPolicyDetail: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func viewDidLoad() {
+    public override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .popUpBackground
         setup()

@@ -8,9 +8,9 @@ public class FontSet: NSObject {
         self.bold = bold
     }
     
-    let largeTitle: UIFont
-    let body: UIFont
-    let bold: UIFont
+    public let largeTitle: UIFont
+    public let body: UIFont
+    public let bold: UIFont
 }
 
 @objc public extension FontSet {

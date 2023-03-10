@@ -1,6 +1,11 @@
 import UIKit
 
-final class PrivacyPopUpViewController: UIViewController {
+@objc
+public protocol PrivacyPopupProtocol {
+    init(viewModel: PrivacyPopUpViewModel)
+}
+
+final class PrivacyPopUpViewController: UIViewController, PrivacyPopupProtocol {
     private lazy var navigationBar: UINavigationBar = {
         let bar = UINavigationBar()
         bar.isTranslucent = true
@@ -34,7 +39,7 @@ final class PrivacyPopUpViewController: UIViewController {
         btn.setTitle("Read more", for: .normal)
         btn.tintColor = accentColor
         btn.setTitleColor(accentColor, for: .normal)
-        btn.addTarget(self, action: #selector(openProvacyPolicy), for: .touchUpInside)
+        btn.addTarget(self, action: #selector(openPrivacyPolicy), for: .touchUpInside)
         btn.titleLabel?.font = UIFontMetrics(forTextStyle: .body).scaledFont(for: fontSet.bold)
         btn.titleLabel?.adjustsFontForContentSizeCategory = true
         return btn
@@ -77,7 +82,10 @@ final class PrivacyPopUpViewController: UIViewController {
         self.accentColor = accentColor
         self.fontSet = fontSet
         super.init(nibName: nil, bundle: nil)
-
+    }
+    
+    convenience init(viewModel: PrivacyPopUpViewModel) {
+        self.init(viewModel: viewModel, accentColor: .blue, fontSet: .standard)
     }
     
     required init?(coder: NSCoder) {
@@ -179,7 +187,7 @@ final class PrivacyPopUpViewController: UIViewController {
         }
         
         viewModel.onError = { [weak self] alert in
-            self?.showErrorAlert(alert)
+            debugPrint(alert)
         }
         
         viewModel.viewDidLoad()
@@ -219,7 +227,7 @@ extension PrivacyPopUpViewController {
         viewModel.acceptSelected()
     }
     
-    @objc func openProvacyPolicy() {
+    @objc func openPrivacyPolicy() {
         let detailView = PrivacyPolicyDetail(text: privacyPolicyLongtext, accentColor: accentColor)
                
         present(detailView, animated: true)

@@ -68,7 +68,7 @@ final class MobileConsentSolutionViewModel {
                                            fontSet: style.fontSet
                                                         )
 
-        mobileConsentsSDK.showPrivacyPopUp() { settings in
+        mobileConsentsSDK.showPrivacyPopUp(customViewType: style.customController) { settings in
             settings.forEach { consent in
                 switch consent.purpose {
                 case .statistical: break
@@ -79,8 +79,10 @@ final class MobileConsentSolutionViewModel {
                     if consent.purposeDescription.lowercased() == "age consent" {
                         // handle user defined consent items such as age consent
                     }
-                @unknown default:
-                    break
+                    if consent.consentItem.id == "<UUID of consent item>" {
+                        // handle user defined consent items such as age consent based on it's UUID
+                    }
+
                 }
                 print("Consent given for:\(consent.purpose): \(consent.isSelected)")
             }
@@ -90,14 +92,6 @@ final class MobileConsentSolutionViewModel {
     func showPrivacyPopUpIfNeeded() {
         // Display the popup and provide a closure for handling the user constent.
         // This completion closure is the place to display
-        MobileConsents(clientID: "40dbe5a7-1c01-463a-bb08-a76970c0efa0",
-                                                       clientSecret: "bfa6f31561827fbc59c5d9dc0b04bdfd9752305ce814e87533e61ea90f9f8da8743c376074e372d3386c2a608c267fe1583472fe6369e3fa9cf0082f7fe2d56d",
-                                                      solutionId: "4113ab88-4980-4429-b2d1-3454cc81197b",
-                                                      accentColor: .systemGreen,
-                                                       fontSet: FontSet(largeTitle: .boldSystemFont(ofSize: 34),
-                                                                        body: .monospacedSystemFont(ofSize: 14, weight: .regular),
-                                                                        bold: .monospacedSystemFont(ofSize: 14, weight: .bold))
-                                                                    )
         
         mobileConsentsSDK.showPrivacyPopUpIfNeeded() { settings in
             settings.forEach { consent in
@@ -110,8 +104,6 @@ final class MobileConsentSolutionViewModel {
                     if consent.purposeDescription.lowercased() == "age consent" {
                         // handle user defined consent items such as age consent
                     }
-                @unknown default:
-                    break
                 }
                 print("Consent given for:\(consent.purpose): \(consent.isSelected)")
             }
@@ -123,6 +115,7 @@ final class MobileConsentSolutionViewModel {
 struct PrivacyPopupStyle {
     var accentColor: UIColor
     var fontSet: FontSet
+    var customController: PrivacyPopupProtocol.Type? = nil
     
     static let standard: PrivacyPopupStyle = {
         PrivacyPopupStyle(accentColor: .systemBlue, fontSet: .standard)
@@ -136,6 +129,10 @@ struct PrivacyPopupStyle {
     
     static let pink: PrivacyPopupStyle = {
         PrivacyPopupStyle(accentColor: .systemPink, fontSet: .standard)
+    }()
+    
+    static let customController: PrivacyPopupStyle = {
+        PrivacyPopupStyle(accentColor: .systemPink, fontSet: .standard, customController: CustomPopup.self)
     }()
 
 }

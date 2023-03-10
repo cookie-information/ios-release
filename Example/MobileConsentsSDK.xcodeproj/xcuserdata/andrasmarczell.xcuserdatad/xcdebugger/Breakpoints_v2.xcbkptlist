@@ -7,16 +7,32 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "07CF2C82-2BDE-4FA2-B0C1-19B5E0439D7C"
-            shouldBeEnabled = "No"
+            uuid = "63267C36-8C1D-4D74-956B-3805210CF682"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Components/WebViewController.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "70"
+            endingLineNumber = "70"
+            landmarkName = "webView(_:didFinish:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "04ABAFE9-824C-4F49-9697-83AF757FFFFC"
+            shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../Sources/MobileConsentsSDK/UI/PopUp/PrivacyPopUpViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "171"
-            endingLineNumber = "171"
-            landmarkName = "setupViewModel()"
+            startingLineNumber = "88"
+            endingLineNumber = "88"
+            landmarkName = "init(viewModel:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

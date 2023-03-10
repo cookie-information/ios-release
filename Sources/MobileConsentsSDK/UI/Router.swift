@@ -18,11 +18,15 @@ final class Router: RouterProtocol {
         self.fontSet = fontSet
     }
     
-    func showPrivacyPopUp(animated: Bool, completion: (([UserConsent])->())? = nil) {
+    func showPrivacyPopUp(popupController: PrivacyPopupProtocol.Type? = nil,
+                          animated: Bool,
+                          completion: (([UserConsent])->())? = nil) {
         let viewModel = PrivacyPopUpViewModel(consentSolutionManager: consentSolutionManager, accentColor: accentColor, fontSet: fontSet)
         viewModel.router = self
         self.completion = completion
-        let viewController = PrivacyPopUpViewController(viewModel: viewModel, accentColor: accentColor, fontSet: fontSet)
+                
+        guard let viewController =  (popupController == nil ? PrivacyPopUpViewController(viewModel: viewModel, accentColor: accentColor, fontSet: fontSet) : popupController!.init(viewModel: viewModel) ) as? UIViewController else { return }
+       
         if #available(iOS 13.0, *) {
             viewController.isModalInPresentation = true
         }
