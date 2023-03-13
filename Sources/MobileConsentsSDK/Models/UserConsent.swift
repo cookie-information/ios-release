@@ -2,7 +2,7 @@ import Foundation
 
 /// UserConsent
 public class UserConsent: NSObject, Codable {
-    internal init(consentItem: ConsentItem, isSelected: Bool) {
+    public init(consentItem: ConsentItem, isSelected: Bool) {
         self.consentItem = consentItem
         self.isSelected = isSelected
     }
