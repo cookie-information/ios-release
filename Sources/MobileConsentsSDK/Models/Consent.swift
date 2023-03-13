@@ -10,9 +10,17 @@ public struct Consent {
     public init(consentSolutionId: String, consentSolutionVersionId: String, customData: [String: String]? = [:], userConsents: [UserConsent]) {
         self.consentSolutionId = consentSolutionId
         self.consentSolutionVersionId = consentSolutionVersionId
-        self.processingPurposes = []
         self.customData = customData
-        self.userConsents = userConsents
+        self.userConsents = userConsents.filter { $0.consentItem.type != .privacyPolicy }
+        self.processingPurposes = self.userConsents
+                                                .map {
+            ProcessingPurpose(consentItemId: $0.consentItem.id,
+                              consentGiven: $0.isSelected,
+                              language: $0.consentItem.translations.primaryLanguage)
+        }
+        
+        print(self.processingPurposes)
+        
     }
     
     public mutating func addProcessingPurpose(_ purpose: ProcessingPurpose) {
