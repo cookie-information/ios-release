@@ -1,6 +1,6 @@
 import UIKit
 
-public extension UIViewController {
+extension UIViewController {
     var topViewController: UIViewController {
         presentedViewController?.topViewController ?? self
     }
