@@ -10,10 +10,11 @@ protocol LocalStorageManagerProtocol {
 }
 
 struct LocalStorageManager: LocalStorageManagerProtocol {
-    
     private let userIdKey = "com.MobileConsents.userIdKey"
     private let consentsKey = "com.MobileConsents.consentsKey"
     private let consentSolutionVersionIdKey = "com.MobileConsents.consentsVersionIdKey"
+    private let consentsInSyncKey = "com.MobileConsents.consentsInSync"
+
     private let userDefaults: UserDefaults
     
     init(userDefaults: UserDefaults = UserDefaults.standard) {
@@ -32,6 +33,15 @@ struct LocalStorageManager: LocalStorageManagerProtocol {
         return id
     }
     
+    internal var consentsInSync: Bool {
+        get {
+            userDefaults.get(forKey: consentsInSyncKey) ?? true
+        }
+        set {
+            userDefaults.set(newValue, forKey: consentsInSyncKey)
+        }
+    }
+
     private func generateAndStoreUserId() -> String {
         let userId = UUID().uuidString
         userDefaults.set(userId, forKey: userIdKey)

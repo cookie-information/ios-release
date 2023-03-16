@@ -1,11 +1,3 @@
-//
-//  SavedDataViewController.swift
-//  MobileConsentsSDK
-//
-//  Created by Jan Lipmann on 08/10/2020.
-//  Copyright © 2020 ClearCode. All rights reserved.
-//
-
 import UIKit
 import MobileConsentsSDK
 
@@ -13,6 +5,7 @@ class SavedDataViewController: BaseViewController {
     @IBOutlet private weak var tableView: UITableView!
     
     var savedItems: [UserConsent] = []
+    var clearConsents: () -> () = { fatalError() }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -31,7 +24,7 @@ class SavedDataViewController: BaseViewController {
     }
     
     @IBAction private func clearAllAction() {
-        UserDefaults.standard.removeObject(forKey: "com.MobileConsents.consentsKey")
+        clearConsents()
         dismiss(animated: true)
     }
 }

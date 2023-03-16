@@ -15,7 +15,7 @@ public struct PrivacyPopUpData {
 protocol PrivacyPopUpViewModelProtocol: UINavigationBarDelegate {
     var onLoadingChange: ((Bool) -> Void)? { get set }
     var onDataLoaded: ((PrivacyPopUpData) -> Void)? { get set }
-    var onError: ((ErrorAlertModel) -> Void)? { get set }
+    var onError: ((Error) -> Void)? { get set }
     
     func viewDidLoad()
     func acceptAll()
@@ -25,7 +25,7 @@ protocol PrivacyPopUpViewModelProtocol: UINavigationBarDelegate {
 public final class PrivacyPopUpViewModel: NSObject, PrivacyPopUpViewModelProtocol {
     public var onLoadingChange: ((Bool) -> Void)?
     public var onDataLoaded: ((PrivacyPopUpData) -> Void)?
-    public var onError: ((ErrorAlertModel) -> Void)?
+    public var onError: ((Error) -> Void)?
     public var accentColor: UIColor
     public var fontSet: FontSet
     var router: RouterProtocol?
@@ -50,8 +50,9 @@ public final class PrivacyPopUpViewModel: NSObject, PrivacyPopUpViewModelProtoco
             self.onLoadingChange?(false)
             
             guard case .success(let solution) = result else {
-                self.handleConsentSolutionLoadingError()
-                
+                if case let .failure(error) = result {
+                    self.onError?(error)
+                }
                 return
             }
             
@@ -78,17 +79,6 @@ public final class PrivacyPopUpViewModel: NSObject, PrivacyPopUpViewModelProtoco
         }
     }
     
-    private func handleConsentSolutionLoadingError() {
-        onError?(.init(
-            retryHandler: { [weak self] in
-                self?.loadConsentSolution()
-            },
-            cancelHandler: { [weak self] in
-                self?.router?.closeAll()
-            }
-        ))
-    }
-    
     private func consentViewModels(from solution: ConsentSolution, required: Bool = false) -> [PopUpConsentViewModel] {
         solution
             .consentItems
@@ -112,12 +102,8 @@ public final class PrivacyPopUpViewModel: NSObject, PrivacyPopUpViewModelProtoco
         if error == nil {
             router?.closeAll()
         } else {
-            onError?(.init(
-                retryHandler: { [weak self] in
-                    self?.buttonTapped(type: buttonType)
-                },
-                cancelHandler: nil
-            ))
+            
+            onError?(error as! Error)
         }
     }
 }

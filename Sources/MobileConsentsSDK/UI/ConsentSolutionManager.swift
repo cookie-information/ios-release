@@ -84,7 +84,6 @@ final class ConsentSolutionManager: ConsentSolutionManagerProtocol {
                     let givenConsentIds = self?.mobileConsents.getSavedConsents().filter(\.isSelected).map(\.consentItem.id) ?? []
                     self?.selectedConsentItemIds = Set(givenConsentIds)
                 }
-                
                 completion(result)
             }
         }
