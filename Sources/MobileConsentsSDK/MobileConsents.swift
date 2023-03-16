@@ -9,7 +9,7 @@ protocol MobileConsentsProtocol {
 @objc
 public final class MobileConsents: NSObject, MobileConsentsProtocol {
     private let networkManager: NetworkManager
-    private let localStorageManager: LocalStorageManager
+    private var localStorageManager: LocalStorageManager
     
     private let accentColor: UIColor
     private let fontSet: FontSet
@@ -67,8 +67,10 @@ public final class MobileConsents: NSObject, MobileConsentsProtocol {
     public func postConsent(_ consent: Consent, completion:@escaping (Error?) -> Void) {
         networkManager.postConsent(consent) {[weak self] error in
             if let error = error {
+                self?.localStorageManager.consentsInSync = false
                 completion(error)
             } else {
+                self?.localStorageManager.consentsInSync = true
                 self?.saveConsentResult(consent)
                 completion(nil)
             }
@@ -132,7 +134,7 @@ public final class MobileConsents: NSObject, MobileConsentsProtocol {
         ignoreVersionChanges: Bool = false,
         completion: (([UserConsent])->())? = nil
     ) {
-        
+        synchronizeIfNeeded()
         self.fetchConsentSolution { result in
             guard case let .success(value) = result else {
                 return // do something else here maybe??
@@ -153,6 +155,19 @@ public final class MobileConsents: NSObject, MobileConsentsProtocol {
         
     }
     
+    
+    /// Synchronizes previously failed uploads with the Cookie Information server if they exist
+    public func synchronizeIfNeeded() {
+        if !localStorageManager.consentsInSync, let versionId = localStorageManager.versionId  {
+            let consent = Consent(consentSolutionId: self.solutionId, consentSolutionVersionId: versionId, userConsents: localStorageManager.consents.map {$0.value})
+            postConsent(consent, completion: {_ in })
+        }
+    }
+    
+    /// Removes all stored consents from the device. Consents stored in the Cookie Information database persist.
+    public func removeStoredConsents() {
+        localStorageManager.clearAll()
+    }
 }
 
 extension MobileConsents {

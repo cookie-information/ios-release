@@ -55,6 +55,7 @@ final class MobileConsentsSolutionViewController: BaseViewController {
         guard let navigationController = segue.destination as? UINavigationController, let savedDataViewController = navigationController.viewControllers.first as? SavedDataViewController else { return }
         
         savedDataViewController.savedItems = viewModel.savedConsents
+        savedDataViewController.clearConsents = viewModel.mobileConsentsSDK.removeStoredConsents
     }
     
     private func showSelection() {

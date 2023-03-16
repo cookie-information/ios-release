@@ -1,6 +1,6 @@
 import UIKit
 
-public extension UIViewController {
+extension UIViewController {
     var topViewController: UIViewController {
         presentedViewController?.topViewController ?? self
     }
@@ -8,9 +8,4 @@ public extension UIViewController {
     func setInteractionEnabled(_ enabled: Bool) {
         (tabBarController ?? navigationController ?? self).view.isUserInteractionEnabled = enabled
     }
-}
-
-public struct ErrorAlertModel {
-    let retryHandler: () -> Void
-    let cancelHandler: (() -> Void)?
 }
