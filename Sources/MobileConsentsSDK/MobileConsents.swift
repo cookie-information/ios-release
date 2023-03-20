@@ -66,14 +66,15 @@ public final class MobileConsents: NSObject, MobileConsentsProtocol {
     ///   - completion: callback - (Error?) -> Void)
     public func postConsent(_ consent: Consent, completion:@escaping (Error?) -> Void) {
         networkManager.postConsent(consent) {[weak self] error in
+            self?.saveConsentResult(consent)
             if let error = error {
                 self?.localStorageManager.consentsInSync = false
                 completion(error)
             } else {
                 self?.localStorageManager.consentsInSync = true
-                self?.saveConsentResult(consent)
                 completion(nil)
             }
+            
         }
     }
     
