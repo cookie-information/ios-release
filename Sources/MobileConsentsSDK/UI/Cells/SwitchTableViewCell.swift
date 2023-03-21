@@ -55,6 +55,7 @@ final class SwitchTableViewCell: BaseTableViewCell {
         setIsSelected(viewModel.isRequired || viewModel.isSelected) //required settings will be selected by default
         uiSwitch.onTintColor = viewModel.accentColor
         uiSwitch.isEnabled = !viewModel.isRequired
+        uiSwitch.accessibilityLabel = "\(viewModel.title) switch"
         valueChanged = { [weak viewModel] isSelected in
             viewModel?.selectionDidChange(isSelected)
         }
