@@ -31,7 +31,7 @@ enum NetworkResult<T> {
 
 final class NetworkManager {
     static let environment: Environment = .production
-    private let provider = Provider<APIService>()
+    private lazy var provider = { Provider<APIService>(enableLogger: enableNetworkLogger) }()
     private let jsonDecoder: JSONDecoder
     private let localStorageManager: LocalStorageManagerProtocol
     private let platformInformationGenerator: PlatformInformationGeneratorProtocol
@@ -39,6 +39,7 @@ final class NetworkManager {
     private let clientSecret: String
     private var token: AuthResponse?
     private let solutionID: String
+    private let enableNetworkLogger: Bool
     
     init(
         jsonDecoder: JSONDecoder,
@@ -46,7 +47,8 @@ final class NetworkManager {
         platformInformationGenerator: PlatformInformationGeneratorProtocol = PlatformInformationGenerator(),
         clientID: String,
         clientSecret: String,
-        solutionID: String
+        solutionID: String,
+        enableNetworkLogger: Bool = false
     ) {
         self.jsonDecoder = jsonDecoder
         self.localStorageManager = localStorageManager
@@ -54,6 +56,7 @@ final class NetworkManager {
         self.clientID = clientID
         self.clientSecret = clientSecret
         self.solutionID = solutionID
+        self.enableNetworkLogger = enableNetworkLogger
     }
     
     func getConsentSolution(completion: @escaping (Result<ConsentSolution, Error>) -> Void) {
@@ -82,8 +85,8 @@ final class NetworkManager {
     }
     
     func authorize(_ completion: @escaping (Result<AuthResponse, Error>) -> Void) {
-        provider.request(.authorize(clientID: "68290ff1-da48-4e61-9eb9-590b86d9a8b9",
-                                    clientSecret: "bfa6f31561827fbc59c5d9dc0b04bdfd9752305ce814e87533e61ea90f9f8da8743c376074e372d3386c2a608c267fe1583472fe6369e3fa9cf0082f7fe2d56d")) { data, response, error in
+        provider.request(.authorize(clientID: clientID,
+                                    clientSecret: clientSecret)) { data, response, error in
             let decoder = JSONDecoder()
           decoder.keyDecodingStrategy = .convertFromSnakeCase
           guard let data = data else {

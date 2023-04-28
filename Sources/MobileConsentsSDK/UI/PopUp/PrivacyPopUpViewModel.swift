@@ -102,8 +102,7 @@ public final class PrivacyPopUpViewModel: NSObject, PrivacyPopUpViewModelProtoco
         if error == nil {
             router?.closeAll()
         } else {
-            
-            onError?(error as! Error)
+            onError?(error!)
         }
     }
 }

@@ -29,12 +29,20 @@ public final class MobileConsents: NSObject, MobileConsentsProtocol {
                                   clientSecret: String,
                                   solutionId: String,
                                   accentColor: UIColor? = nil,
-                                  fontSet: FontSet = .standard) {
+                                  fontSet: FontSet = .standard,
+                                  enableNetworkLogger: Bool = false) {
         
-        self.init(localStorageManager: LocalStorageManager(), uiLanguageCode: uiLanguageCode, clientID: clientID, clientSecret: clientSecret, solutionID: solutionId, accentColor: accentColor, fontSet: fontSet)
+        self.init(localStorageManager: LocalStorageManager(),
+                  uiLanguageCode: uiLanguageCode,
+                  clientID: clientID,
+                  clientSecret: clientSecret,
+                  solutionID: solutionId,
+                  accentColor: accentColor,
+                  fontSet: fontSet,
+                  enableNetworkLogger: enableNetworkLogger)
     }
     
-    init(localStorageManager: LocalStorageManager, uiLanguageCode: String?, clientID: String, clientSecret: String, solutionID: String, accentColor: UIColor?, fontSet: FontSet) {
+    init(localStorageManager: LocalStorageManager, uiLanguageCode: String?, clientID: String, clientSecret: String, solutionID: String, accentColor: UIColor?, fontSet: FontSet, enableNetworkLogger: Bool) {
         let jsonDecoder = JSONDecoder()
         jsonDecoder.userInfo[primaryLanguageCodingUserInfoKey] = uiLanguageCode
         
@@ -45,7 +53,8 @@ public final class MobileConsents: NSObject, MobileConsentsProtocol {
             localStorageManager: localStorageManager,
             clientID: clientID,
             clientSecret: clientSecret,
-            solutionID: solutionID
+            solutionID: solutionID,
+            enableNetworkLogger: enableNetworkLogger
         )
         self.localStorageManager = localStorageManager
         self.solutionId = solutionID

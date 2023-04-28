@@ -18,9 +18,6 @@ public struct Consent {
                               consentGiven: $0.isSelected,
                               language: $0.consentItem.translations.primaryLanguage)
         }
-        
-        print(self.processingPurposes)
-        
     }
     
     public mutating func addProcessingPurpose(_ purpose: ProcessingPurpose) {
