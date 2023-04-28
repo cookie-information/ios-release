@@ -42,12 +42,6 @@ final class MobileConsentsSolutionViewController: BaseViewController {
     }
     
     
-    @IBAction func openInAppBrowser() {
-         let browser = WebViewController(consents: viewModel.mobileConsentsSDK)
-        
-        self.present(browser, animated: true)
-    }
-    
     @IBAction private func showPopUpAction() {        showSelection()
     }
     
@@ -80,9 +74,7 @@ final class MobileConsentsSolutionViewController: BaseViewController {
             self.viewModel.showPrivacyPopUp(style: .customController)
         }))
         
-        self.present(alert, animated: true, completion: {
-            print("completion block")
-        })
+        self.present(alert, animated: true)
     }
 }
 

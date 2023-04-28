@@ -30,7 +30,8 @@ MobileConsents *mobileConsents = [[MobileConsents alloc] initWithUiLanguageCode:
                                                             clientSecret:@"<CLIENT_SECRET>"
                                                               solutionId:@"<SOLUTION ID>"
                                                              accentColor: UIColor.systemBlueColor
-                                                                 fontSet: FontSet.standard ];
+                                                                 fontSet: FontSet.standard
+                                                                  enableNetworkLogger: YES];
 ```
 
 # Using built-in mobile consents UI
@@ -221,3 +222,16 @@ struct  SavedConsent {
 mobileConsentsSDK.cancel()
 ```
 
+### Logging
+
+The SDK can be configured to print the network events in the console. These events include all network requests, responses and errors. By default this option is disabled to keep the unnecessary clutter out of the console, however in case of unexpected behaviour or to verify that everything works as expected it can be switched on in the SDK initializer.
+
+```swift 
+import MobileConsentsSDK
+
+let mobileConsentsSDK = MobileConsents(clientID: "<CLIENT_ID>",
+clientSecret: "<CLIENT_SECRET>",
+solutionId: "<SOLUTION ID>",
+enableNetworkLogger: true
+)
+```
