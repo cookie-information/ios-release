@@ -15,7 +15,6 @@ public struct PrivacyPopUpData {
 protocol PrivacyPopUpViewModelProtocol: UINavigationBarDelegate {
     var onLoadingChange: ((Bool) -> Void)? { get set }
     var onDataLoaded: ((PrivacyPopUpData) -> Void)? { get set }
-    var onError: ((Error) -> Void)? { get set }
     
     func viewDidLoad()
     func acceptAll()
@@ -25,7 +24,6 @@ protocol PrivacyPopUpViewModelProtocol: UINavigationBarDelegate {
 public final class PrivacyPopUpViewModel: NSObject, PrivacyPopUpViewModelProtocol {
     public var onLoadingChange: ((Bool) -> Void)?
     public var onDataLoaded: ((PrivacyPopUpData) -> Void)?
-    public var onError: ((Error) -> Void)?
     public var accentColor: UIColor
     public var fontSet: FontSet
     var router: RouterProtocol?
@@ -51,7 +49,7 @@ public final class PrivacyPopUpViewModel: NSObject, PrivacyPopUpViewModelProtoco
             
             guard case .success(let solution) = result else {
                 if case let .failure(error) = result {
-                    self.onError?(error)
+                    router?.closeAll(error: error)
                 }
                 return
             }
@@ -98,12 +96,7 @@ public final class PrivacyPopUpViewModel: NSObject, PrivacyPopUpViewModelProtoco
     
     private func handlePostingConsent(buttonType: PopUpButtonViewModel.ButtonType, error: Error?) {
         onLoadingChange?(false)
-        
-        if error == nil {
-            router?.closeAll()
-        } else {
-            onError?(error!)
-        }
+        router?.closeAll(error: error)
     }
 }
 

@@ -16,6 +16,10 @@ public final class MobileConsents: NSObject, MobileConsentsProtocol {
     private let solutionId: String
     public typealias ConsentSolutionCompletion = (Result<ConsentSolution, Error>) -> ()
     
+    /// Unique identifier of the user in Cookie Information records. This ID is assigned upon first run of the SDK
+    public var userId: String {
+        localStorageManager.userId
+    }
     /// MobileConsents class initializer.
     ///
     /// - Parameters:
@@ -107,11 +111,13 @@ public final class MobileConsents: NSObject, MobileConsentsProtocol {
     ///   - onViewController: UIViewController to present pop up on. If not provided, top-most presented view controller of key window of the application is used.
     ///   - animated: If presentation should be animated. Defaults to `true`.
     ///   - completion: called after the user closes the privacy popup.
+    ///   - errorHandler: called upon ecountering an error
     @objc public func showPrivacyPopUp(
         customViewType: PrivacyPopupProtocol.Type? = nil,
         onViewController presentingViewController: UIViewController? = nil,
         animated: Bool = true,
-        completion: (([UserConsent])->())? = nil
+        completion: (([UserConsent])->())? = nil,
+        errorHandler: ((Error)->())? = nil
     ) {
         DispatchQueue.main.async {
             let presentingViewController = presentingViewController ?? UIApplication.shared.windows.first { $0.isKeyWindow }?.topViewController
@@ -124,7 +130,7 @@ public final class MobileConsents: NSObject, MobileConsentsProtocol {
             let router = Router(consentSolutionManager: consentSolutionManager, accentColor: self.accentColor, fontSet: self.fontSet)
             router.rootViewController = presentingViewController
            
-            router.showPrivacyPopUp(popupController: customViewType, animated: animated, completion: completion)
+            router.showPrivacyPopUp(popupController: customViewType, animated: animated, completion: completion, error: errorHandler)
         }
        
     }
@@ -137,12 +143,14 @@ public final class MobileConsents: NSObject, MobileConsentsProtocol {
     ///   - animated: If presentation should be animated. Defaults to `true`.
     ///   - ignoreVersionChanges: if set to `true` the SDK will ignore changes made to the consent solution in the Cookie Information web interface
     ///   - completion: called after the user closes the privacy popup.
+    ///   - errorHandler: called upon ecountering an error
     @objc public func showPrivacyPopUpIfNeeded(
         customViewType: PrivacyPopupProtocol.Type? = nil,
         onViewController presentingViewController: UIViewController? = nil,
         animated: Bool = true,
         ignoreVersionChanges: Bool = false,
-        completion: (([UserConsent])->())? = nil
+        completion: (([UserConsent])->())? = nil,
+        errorHandler: ((Error)->())? = nil
     ) {
         synchronizeIfNeeded()
         self.fetchConsentSolution { result in
@@ -155,7 +163,7 @@ public final class MobileConsents: NSObject, MobileConsentsProtocol {
             let storedVersionId = self.localStorageManager.versionId
             
             guard !storedConsents.isEmpty && (storedVersionId == versionId || ignoreVersionChanges) else {
-                self.showPrivacyPopUp(customViewType: customViewType, completion: completion)
+                self.showPrivacyPopUp(customViewType: customViewType, completion: completion, errorHandler: errorHandler)
                 return
             }
             
