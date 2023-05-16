@@ -126,7 +126,7 @@ final class SwitchTableViewCell: BaseTableViewCell {
 }
 
 
-private extension String {
+internal extension String {
     var containsHtml: Bool {
         let range = NSRange(location: 0, length: self.utf16.count)
         let regex = try! NSRegularExpression(pattern: #"</?\w+((\s+\w+(\s*=\s*(?:".*?"|'.*?'|[^'">\s]+))?)+\s*|\s*)/?>"#)
@@ -134,7 +134,14 @@ private extension String {
     }
     
     var attributedHtmlString: NSAttributedString? {
-        let page = """
+        let page = wrappedInHtml
+        let data = Data(page.utf8)
+        return try? NSAttributedString(data: data, options: [.documentType: NSAttributedString.DocumentType.html], documentAttributes: nil)
+        
+    }
+    
+    var wrappedInHtml: String {
+        """
 <html>
 <head>
 <style>
@@ -146,9 +153,6 @@ private extension String {
 </body>
 </html>
 """
-        let data = Data(page.utf8)
-        return try? NSAttributedString(data: data, options: [.documentType: NSAttributedString.DocumentType.html], documentAttributes: nil)
-        
     }
     
     var baseCSS: String {
@@ -180,7 +184,7 @@ footer, header, hgroup, menu, nav, section {
 }
 body {
     line-height: 1;
-    font: -apple-system-body; font-family: -apple-system;
+    font: -apple-system-body; font-family: -apple-system; font-size: 14;
 
 }
 ol, ul {
@@ -200,9 +204,9 @@ table {
 }
 
 h1 {font: -apple-system-headine; font-family: -apple-system;}
-p {font: -apple-system-body; font-family: -apple-system;}
-b {font: -apple-system-body; font-family: -apple-system; font-weight: bold;}
-i {font: -apple-system-body; font-family: -apple-system; font-style: italic;}
+p {font: -apple-system-body; font-family: -apple-system; font-size: inherit;}
+b {font: -apple-system-body; font-family: -apple-system; font-weight: bold; font-size: inherit;}
+i {font: -apple-system-body; font-family: -apple-system; font-style: italic; font-size: inherit;}
 
 """
     }

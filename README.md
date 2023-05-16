@@ -99,6 +99,18 @@ Just like in Swift, the same methods are used to display the privacy pop-up, onl
     }];
 ```
 
+### Handling errors
+
+Both the `showPrivacyPopUp` and `showPrivacyPopUpIfNeeded` can be passed a `errorHandler` closure that is called when an error occurs. After the `errorHandler` is called, the popup is dismissed by the router, the selection made by the user is persisted locally and an attempt is made the next time `showPrivacyPopUpIfNeeded` is called or if `synchronizeIfNeeded` method is called manually.
+
+```swift
+        mobileConsentsSDK.showPrivacyPopUpIfNeeded(ignoreVersionChanges: true) { settings in
+         // handle results here
+        } errorHandler: { err in
+            // handle the error here
+        }
+```
+
 ## Styling
 
 The UI accent color and the fonts can be customized in the SDKs initializer:
@@ -222,7 +234,7 @@ struct  SavedConsent {
 mobileConsentsSDK.cancel()
 ```
 
-### Logging
+## Logging
 
 The SDK can be configured to print the network events in the console. These events include all network requests, responses and errors. By default this option is disabled to keep the unnecessary clutter out of the console, however in case of unexpected behaviour or to verify that everything works as expected it can be switched on in the SDK initializer.
 
@@ -235,3 +247,11 @@ solutionId: "<SOLUTION ID>",
 enableNetworkLogger: true
 )
 ```
+## Displaying the device identifier
+All consents sent to the Cookie Information servers are identified by a unique device identifier that is generated randomly after opening the privacy popup for the first time. This ID is necessary for Cookie Information to retrieve consents saved by the end user. 
+
+During normal operation the identifier is not required, however in case the end user wants to access their saved consents, it is only possible if they provide the above mentioned identifier. When using the default user interface, the device identifier can be located at the bottom of the privacy policy page (after tapping "read more"). It can be copied to the clipboard by tapping the text and selecting the appropriate button from the action sheet.
+
+<img src="Documentation/deviceId1.png" width="300px">
+<img src="Documentation/deviceId2.png" width="300px">
+

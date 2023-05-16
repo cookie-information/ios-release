@@ -30,7 +30,6 @@ final class PrivacyPopUpViewController: UIViewController, PrivacyPopupProtocol {
         view.text = "Privacy"
         view.adjustsFontForContentSizeCategory = true
         view.font = UIFontMetrics(forTextStyle: .largeTitle).scaledFont(for: fontSet.largeTitle)
-        
         return view
     }()
     
@@ -66,6 +65,7 @@ final class PrivacyPopUpViewController: UIViewController, PrivacyPopupProtocol {
         combined.append(cookie)
         label.attributedText = combined
         
+        label.isUserInteractionEnabled = true
         return label
     }()
     
@@ -77,6 +77,7 @@ final class PrivacyPopUpViewController: UIViewController, PrivacyPopupProtocol {
     private let viewModel: PrivacyPopUpViewModelProtocol
     private var sections = [Section]()
     private let fontSet: FontSet
+    
     init(viewModel: PrivacyPopUpViewModelProtocol, accentColor: UIColor, fontSet: FontSet) {
         self.viewModel = viewModel
         self.accentColor = accentColor
@@ -114,8 +115,8 @@ final class PrivacyPopUpViewController: UIViewController, PrivacyPopupProtocol {
         view.addSubview(activityIndicator)
         view.addSubview(privacyDescription)
         view.addSubview(readModeButton)
-        view.addSubview(poweredByLabel)
         view.addSubview(titleView)
+        view.addSubview(poweredByLabel)
         
         titleView.translatesAutoresizingMaskIntoConstraints = false
         readModeButton.translatesAutoresizingMaskIntoConstraints = false
@@ -124,7 +125,7 @@ final class PrivacyPopUpViewController: UIViewController, PrivacyPopupProtocol {
         activityIndicator.translatesAutoresizingMaskIntoConstraints = false
         privacyDescription.translatesAutoresizingMaskIntoConstraints = false
         poweredByLabel.translatesAutoresizingMaskIntoConstraints = false
-        
+
         NSLayoutConstraint.activate([
             navigationBar.topAnchor.constraint(equalTo: view.topAnchor),
             navigationBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -151,7 +152,8 @@ final class PrivacyPopUpViewController: UIViewController, PrivacyPopupProtocol {
             activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor),
             
             poweredByLabel.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor, constant: -8),
-            poweredByLabel.bottomAnchor.constraint(equalTo: view.layoutMarginsGuide.bottomAnchor, constant: -8)
+            poweredByLabel.bottomAnchor.constraint(equalTo: view.layoutMarginsGuide.bottomAnchor, constant: -8),
+            
         ])
         
         ([
@@ -186,11 +188,6 @@ final class PrivacyPopUpViewController: UIViewController, PrivacyPopupProtocol {
             self?.setInteractionEnabled(!isLoading)
         }
         
-        viewModel.onError = { [weak self] error in
-            debugPrint(error.localizedDescription)
-            self?.dismiss(animated: true)
-        }
-        
         viewModel.viewDidLoad()
     }
 }
@@ -209,7 +206,7 @@ extension PrivacyPopUpViewController: UITableViewDataSource, UITableViewDelegate
     }
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection
-                                section: Int) -> String? {
+                   section: Int) -> String? {
         return section == 0 ? "Required" : "Optional"
     }
     
@@ -232,9 +229,8 @@ extension PrivacyPopUpViewController {
         let detailView = PrivacyPolicyDetail(text: privacyPolicyLongtext, accentColor: accentColor)
                
         present(detailView, animated: true)
-
-        
     }
+    
 }
 
 extension String {

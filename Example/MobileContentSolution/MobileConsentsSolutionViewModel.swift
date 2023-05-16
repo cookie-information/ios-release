@@ -91,7 +91,9 @@ final class MobileConsentSolutionViewModel {
                 }
                 print("Consent given for:\(consent.purpose): \(consent.isSelected)")
             }
-        }
+        } errorHandler: { err in
+            print("Ooops, we've encountered an error: \(err.localizedDescription)")
+        }        
     }
     
     func showPrivacyPopUpIfNeeded() {
@@ -112,6 +114,8 @@ final class MobileConsentSolutionViewModel {
                 }
                 print("Consent given for:\(consent.purpose): \(consent.isSelected)")
             }
+        } errorHandler: { err in
+            print("Ooops, we've encountered an error: \(err.localizedDescription)")
         }
     }
     
