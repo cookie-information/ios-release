@@ -2,12 +2,22 @@
 # Mobile Consents SDK
 
 # Installation
-MobileConsentsSDK is available through the Swift Package Manager (SPM). To start using it you need to add a new Package Dependency to your XCode project with the following repository URL:
+### Swift Package Manager
+MobileConsentsSDK is available through the Swift Package Manager (SPM) and CocoaPods. For the best experience we recommend using SPM by adding a new Package Dependency to your XCode project with the following repository URL:
 ```
 https://github.com/cookie-information/ios-release
 ```
 
-In you're unable to use SPM in your project, you can add the source code to your project either as a Git submodule or manually copy it into your Xcode Workspace. Using the manual method is discouraged as it requires you to manually update the SDK when security or feature updates are released.
+### Cocoapods
+ Add the following line to your Podfile and run `pod install` from your terminal.
+ ```
+   pod 'MobileConsentsSDK', :git => 'https://github.com/cookie-information/ios-release.git'
+ 
+ ```
+
+### Manual installation
+
+In you're unable to use SPM or CocoaPods in your project, you can add the source code to your project either as a Git submodule or manually copy it into your Xcode Workspace. Using the manual method is discouraged as it requires you to manually update the SDK when security or feature updates are released.
 # Using the SDK
 
 ## Initializing
