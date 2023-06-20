@@ -6,8 +6,9 @@ extension String {
 
 extension String {
     var localized: String {
-        NSLocalizedString(self, bundle: Bundle.module, comment: "")
+        NSLocalizedString(self, bundle: Bundle.current, comment: "")
     }
 }
 
 private final class BundleLocator {}
+
