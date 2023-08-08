@@ -9,6 +9,7 @@
 #import "ViewController.h"
 @import MobileConsentsSDK;
 
+
 @interface ViewController ()
 @property MobileConsents *mobileConsents;
 @end
@@ -31,7 +32,13 @@
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear: animated];
-    
+    [self.mobileConsents showPrivacyPopOnViewController:self animated:YES completion:^(NSArray<UserConsent *> *consents) {
+        for(UserConsent* consent in consents) {
+            NSLog(@"@", [consent])
+        }
+    } errorHandler:^(NSError * _Nonnull) {
+        
+    }]
     [self.mobileConsents showPrivacyPopUpOnViewController:self animated:YES completion:nil];
 
 }

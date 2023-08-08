@@ -155,7 +155,7 @@ public final class MobileConsents: NSObject, MobileConsentsProtocol {
         synchronizeIfNeeded()
         self.fetchConsentSolution { result in
             guard case let .success(value) = result else {
-                return // do something else here maybe??
+                return
             }
             
             let storedConsents = self.localStorageManager.consents
@@ -163,6 +163,7 @@ public final class MobileConsents: NSObject, MobileConsentsProtocol {
             let storedVersionId = self.localStorageManager.versionId
             
             guard !storedConsents.isEmpty && (storedVersionId == versionId || ignoreVersionChanges) else {
+                self.removeStoredConsents()
                 self.showPrivacyPopUp(customViewType: customViewType, completion: completion, errorHandler: errorHandler)
                 return
             }
