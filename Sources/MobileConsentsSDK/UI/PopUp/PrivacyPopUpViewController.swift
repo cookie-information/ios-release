@@ -33,7 +33,7 @@ final class PrivacyPopUpViewController: UIViewController, PrivacyPopupProtocol {
         return view
     }()
     
-    private lazy var readModeButton: UIButton = {
+    private lazy var readMoreButton: UIButton = {
         let btn = UIButton()
         btn.setTitle("Read more", for: .normal)
         btn.tintColor = accentColor
@@ -69,8 +69,17 @@ final class PrivacyPopUpViewController: UIViewController, PrivacyPopupProtocol {
         return label
     }()
     
+    private lazy var scrollContainer: UIScrollView = {
+        return UIScrollView()
+    }()
+    
+    private lazy var tableView: FixedTableView = {
+        let table = FixedTableView()
+        table.isScrollEnabled = false
+        return table
+    }()
+    
     private var privacyPolicyLongtext = ""
-    private let tableView = UITableView()
     private lazy var buttonsView = { PopUpButtonsView(accentColor: accentColor) }()
     private let activityIndicator = UIActivityIndicatorView(style: .whiteLarge)
     private let accentColor: UIColor
@@ -110,16 +119,18 @@ final class PrivacyPopUpViewController: UIViewController, PrivacyPopupProtocol {
         tableView.separatorStyle = .none
         tableView.tableFooterView = UIView()
         
+        view.addSubview(scrollContainer)
         view.addSubview(navigationBar)
-        view.addSubview(tableView)
+        scrollContainer.addSubview(tableView)
         view.addSubview(activityIndicator)
-        view.addSubview(privacyDescription)
-        view.addSubview(readModeButton)
-        view.addSubview(titleView)
-        view.addSubview(poweredByLabel)
+        scrollContainer.addSubview(privacyDescription)
+        scrollContainer.addSubview(readMoreButton)
+        scrollContainer.addSubview(titleView)
+        scrollContainer.addSubview(poweredByLabel)
         
+        scrollContainer.translatesAutoresizingMaskIntoConstraints = false
         titleView.translatesAutoresizingMaskIntoConstraints = false
-        readModeButton.translatesAutoresizingMaskIntoConstraints = false
+        readMoreButton.translatesAutoresizingMaskIntoConstraints = false
         navigationBar.translatesAutoresizingMaskIntoConstraints = false
         tableView.translatesAutoresizingMaskIntoConstraints = false
         activityIndicator.translatesAutoresizingMaskIntoConstraints = false
@@ -131,28 +142,33 @@ final class PrivacyPopUpViewController: UIViewController, PrivacyPopupProtocol {
             navigationBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             navigationBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             
-            titleView.topAnchor.constraint(equalTo: navigationBar.bottomAnchor, constant: 15),
-            titleView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
-            titleView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            scrollContainer.topAnchor.constraint(equalTo: navigationBar.bottomAnchor, constant: 15),
+            scrollContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            scrollContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            scrollContainer.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            titleView.topAnchor.constraint(equalTo: scrollContainer.topAnchor),
+            titleView.leadingAnchor.constraint(equalTo: scrollContainer.layoutMarginsGuide.leadingAnchor),
+            titleView.trailingAnchor.constraint(equalTo: scrollContainer.trailingAnchor),
             
             privacyDescription.topAnchor.constraint(equalTo: titleView.bottomAnchor, constant: 15),
-            privacyDescription.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
-            privacyDescription.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            privacyDescription.leadingAnchor.constraint(equalTo: scrollContainer.layoutMarginsGuide.leadingAnchor),
+            privacyDescription.trailingAnchor.constraint(equalTo: scrollContainer.trailingAnchor),
             
-            readModeButton.topAnchor.constraint(equalTo: privacyDescription.bottomAnchor, constant: 15),
-            readModeButton.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
-            readModeButton.heightAnchor.constraint(equalToConstant: readModeButton.titleLabel?.font.pointSize ?? 14),
+            readMoreButton.topAnchor.constraint(equalTo: privacyDescription.bottomAnchor, constant: 15),
+            readMoreButton.leadingAnchor.constraint(equalTo: scrollContainer.layoutMarginsGuide.leadingAnchor),
+            readMoreButton.heightAnchor.constraint(equalToConstant: readMoreButton.titleLabel?.font.pointSize ?? 14),
             
-            tableView.topAnchor.constraint(equalTo: readModeButton.bottomAnchor, constant: 10),
+            tableView.topAnchor.constraint(equalTo: readMoreButton.bottomAnchor, constant: 10),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: poweredByLabel.topAnchor, constant: -2),
+            tableView.bottomAnchor.constraint(equalTo: poweredByLabel.topAnchor, constant:  -10),
             
-            activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            activityIndicator.centerXAnchor.constraint(equalTo: scrollContainer.centerXAnchor),
+            activityIndicator.centerYAnchor.constraint(equalTo: scrollContainer.centerYAnchor),
             
-            poweredByLabel.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor, constant: -8),
-            poweredByLabel.bottomAnchor.constraint(equalTo: view.layoutMarginsGuide.bottomAnchor, constant: -8),
+            poweredByLabel.trailingAnchor.constraint(equalTo: scrollContainer.layoutMarginsGuide.trailingAnchor, constant: -8),
+            poweredByLabel.bottomAnchor.constraint(equalTo: scrollContainer.bottomAnchor, constant: -8),
             
         ])
         
@@ -163,6 +179,8 @@ final class PrivacyPopUpViewController: UIViewController, PrivacyPopupProtocol {
         tableView.dataSource = self
         tableView.delegate = self
     }
+    
+
     
     private func setupViewModel() {
         viewModel.onDataLoaded = { [weak self] data in
@@ -175,12 +193,11 @@ final class PrivacyPopUpViewController: UIViewController, PrivacyPopupProtocol {
             self.barItem.rightBarButtonItem?.title = data.acceptAllButtonTitle
             self.privacyDescription.text = data.privacyDescription
             self.privacyPolicyLongtext = data.privacyPolicyLongtext
-            self.readModeButton.setTitle("\(data.readMoreButton) ", for: .normal)
+            self.readMoreButton.setTitle("\(data.readMoreButton) ", for: .normal)
             let chevron = UIImage(named: "chevron", in: .current, compatibleWith: nil)
-            self.readModeButton.setImage(chevron, for: .normal)
-            self.readModeButton.semanticContentAttribute = .forceRightToLeft
-            self.view.accessibilityElements = [self.titleView, self.privacyDescription, self.readModeButton, self.tableView, self.navigationBar]
-
+            self.readMoreButton.setImage(chevron, for: .normal)
+            self.readMoreButton.semanticContentAttribute = .forceRightToLeft
+            self.view.accessibilityElements = [self.titleView, self.privacyDescription, self.readMoreButton, self.tableView, self.navigationBar]
         }
         
         viewModel.onLoadingChange = { [weak self, activityIndicator] isLoading in
@@ -239,3 +256,16 @@ extension String {
     }
 }
 
+
+final class FixedTableView: UITableView {
+    override var contentSize:CGSize {
+        didSet {
+            invalidateIntrinsicContentSize()
+        }
+    }
+    
+    override var intrinsicContentSize: CGSize {
+        layoutIfNeeded()
+        return CGSize(width: UIView.noIntrinsicMetric, height: contentSize.height)
+    }
+}
