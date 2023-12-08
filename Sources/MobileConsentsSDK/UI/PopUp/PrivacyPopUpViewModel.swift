@@ -49,7 +49,7 @@ public final class PrivacyPopUpViewModel: NSObject, PrivacyPopUpViewModelProtoco
             
             guard case .success(let solution) = result else {
                 if case let .failure(error) = result {
-                    router?.closeAll(error: error)
+                    self.router?.closeAll(error: error)
                 }
                 return
             }
