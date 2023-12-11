@@ -152,8 +152,8 @@ final class PrivacyPopUpViewController: UIViewController, PrivacyPopupProtocol {
             titleView.trailingAnchor.constraint(equalTo: scrollContainer.trailingAnchor),
             
             privacyDescription.topAnchor.constraint(equalTo: titleView.bottomAnchor, constant: 15),
-            privacyDescription.leadingAnchor.constraint(equalTo: scrollContainer.layoutMarginsGuide.leadingAnchor),
-            privacyDescription.trailingAnchor.constraint(equalTo: scrollContainer.trailingAnchor),
+            privacyDescription.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
+            privacyDescription.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             
             readMoreButton.topAnchor.constraint(equalTo: privacyDescription.bottomAnchor, constant: 15),
             readMoreButton.leadingAnchor.constraint(equalTo: scrollContainer.layoutMarginsGuide.leadingAnchor),
