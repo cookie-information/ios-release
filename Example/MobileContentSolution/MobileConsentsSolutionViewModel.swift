@@ -33,7 +33,6 @@ final class MobileConsentSolutionViewModel {
         }
         return sectionTypes
     }
-
     var consentSolution: ConsentSolution?
 
     var savedConsents: [UserConsent] {
