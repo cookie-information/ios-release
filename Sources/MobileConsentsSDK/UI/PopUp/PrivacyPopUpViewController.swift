@@ -194,9 +194,13 @@ final class PrivacyPopUpViewController: UIViewController, PrivacyPopupProtocol {
             self.privacyDescription.text = data.privacyDescription
             self.privacyPolicyLongtext = data.privacyPolicyLongtext
             self.readMoreButton.setTitle("\(data.readMoreButton) ", for: .normal)
-            let chevron = UIImage(named: "chevron", in: .current, compatibleWith: nil)
+            let chevron = UIImage(named: "chevron", in: .module, compatibleWith: nil)
+            
             self.readMoreButton.setImage(chevron, for: .normal)
+            self.readMoreButton.imageEdgeInsets = UIEdgeInsets(top: 2, left: 0, bottom: 2, right: 0)
             self.readMoreButton.semanticContentAttribute = .forceRightToLeft
+            
+            
             self.view.accessibilityElements = [self.titleView, self.privacyDescription, self.readMoreButton, self.tableView, self.navigationBar]
         }
         
