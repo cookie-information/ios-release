@@ -14,6 +14,9 @@ public final class MobileConsents: NSObject, MobileConsentsProtocol {
     private let accentColor: UIColor
     private let fontSet: FontSet
     private let solutionId: String
+    
+    private var localizationOverride: [Locale: LabelText]
+    
     public typealias ConsentSolutionCompletion = (Result<ConsentSolution, Error>) -> ()
     
     /// Unique identifier of the user in Cookie Information records. This ID is assigned upon first run of the SDK
@@ -34,6 +37,7 @@ public final class MobileConsents: NSObject, MobileConsentsProtocol {
                                   solutionId: String,
                                   accentColor: UIColor? = nil,
                                   fontSet: FontSet = .standard,
+                                  localizationOverride: [Locale: LabelText] = [:],
                                   enableNetworkLogger: Bool = false) {
         
         self.init(localStorageManager: LocalStorageManager(),
@@ -43,10 +47,11 @@ public final class MobileConsents: NSObject, MobileConsentsProtocol {
                   solutionID: solutionId,
                   accentColor: accentColor,
                   fontSet: fontSet,
+                  localizationOverride: localizationOverride,
                   enableNetworkLogger: enableNetworkLogger)
     }
     
-    init(localStorageManager: LocalStorageManager, uiLanguageCode: String?, clientID: String, clientSecret: String, solutionID: String, accentColor: UIColor?, fontSet: FontSet, enableNetworkLogger: Bool) {
+    init(localStorageManager: LocalStorageManager, uiLanguageCode: String?, clientID: String, clientSecret: String, solutionID: String, accentColor: UIColor?, fontSet: FontSet, localizationOverride: [Locale: LabelText] = [:], enableNetworkLogger: Bool) {
         let jsonDecoder = JSONDecoder()
         jsonDecoder.userInfo[primaryLanguageCodingUserInfoKey] = uiLanguageCode
         
@@ -62,6 +67,7 @@ public final class MobileConsents: NSObject, MobileConsentsProtocol {
         )
         self.localStorageManager = localStorageManager
         self.solutionId = solutionID
+        self.localizationOverride = localizationOverride
     }
     
     /// Method responsible for fetching Consent Solutions.
@@ -124,8 +130,10 @@ public final class MobileConsents: NSObject, MobileConsentsProtocol {
             
             let consentSolutionManager = ConsentSolutionManager(
                 consentSolutionId: self.solutionId,
-                mobileConsents: self
-            )
+                mobileConsents: self,
+                localizationOverride: self.localizationOverride
+
+                )
             
             let router = Router(consentSolutionManager: consentSolutionManager, accentColor: self.accentColor, fontSet: self.fontSet)
             router.rootViewController = presentingViewController
@@ -187,6 +195,10 @@ public final class MobileConsents: NSObject, MobileConsentsProtocol {
     public func removeStoredConsents() {
         localStorageManager.clearAll()
     }
+    
+    public func setCustomLabels() {
+        
+    }
 }
 
 extension MobileConsents {
@@ -195,3 +207,4 @@ extension MobileConsents {
         localStorageManager.addConsentsArray(consents, versionId: consent.consentSolutionVersionId)
     }
 }
+

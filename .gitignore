@@ -2,3 +2,4 @@
 *.xcuserstate
 Example/MobileConsentsSDK.xcodeproj/project.xcworkspace/xcuserdata/andrasmarczell.xcuserdatad/UserInterfaceState.xcuserstate
 Example/MobileConsentsSDK.xcodeproj/xcuserdata/andrasmarczell.xcuserdatad/xcdebugger/Breakpoints_v2.xcbkptlist
+.build
