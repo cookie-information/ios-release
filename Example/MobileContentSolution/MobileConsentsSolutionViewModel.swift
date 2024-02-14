@@ -10,6 +10,10 @@ final class MobileConsentSolutionViewModel {
                                                    fontSet: FontSet(largeTitle: .boldSystemFont(ofSize: 34),
                                                                     body: .monospacedSystemFont(ofSize: 14, weight: .regular),
                                                                     bold: .monospacedSystemFont(ofSize: 14, weight: .bold)),
+                                                       localizationOverride: [Locale.init(identifier: "en"): LabelText(
+                                                        title: "Data privacy",
+                                                        readMoreScreenHeader: "Data privacy explained"
+                                                       )],
                                                     enableNetworkLogger: true)
     
     
@@ -69,6 +73,9 @@ final class MobileConsentSolutionViewModel {
                                            solutionId: solutionId,
                                            accentColor: style.accentColor,
                                            fontSet: style.fontSet,
+                                           localizationOverride: [Locale.init(identifier: "en"): LabelText(
+                                            title: "Data privacy"
+                                           )],
                                            enableNetworkLogger: true
                                                         )
 

@@ -2,14 +2,17 @@ import Foundation
 import UIKit
 
 public struct PrivacyPopUpData {
-    public let title: String
     public let sections: [PopUpConsentsSection]
+    
+    public let title: String
     public let acceptAllButtonTitle: String
     public let saveSelectionButtonTitle: String
-
     public let privacyDescription: String
     public let privacyPolicyLongtext: String
     public let readMoreButton: String
+    public let requiredSectionHeader: String
+    public let optionalSectionHeader: String
+    public let readMoreScreenHeader: String
 }
 
 protocol PrivacyPopUpViewModelProtocol: UINavigationBarDelegate {
@@ -60,17 +63,30 @@ public final class PrivacyPopUpViewModel: NSObject, PrivacyPopUpViewModelProtoco
             let optionalSection = PopUpConsentsSection(viewModels: self.consentViewModels(from: solution))
             let requiredSection = PopUpConsentsSection(viewModels: self.consentViewModels(from: solution, required: true))
             
+            let overrides = consentSolutionManager.localizationOverride[Locale(identifier: solution.primaryLanguage)]
+      
             let data = PrivacyPopUpData(
-                title: title,
                 sections: [
                     requiredSection,
                     optionalSection
                 ],
-                acceptAllButtonTitle: solution.templateTexts.acceptAllButton.primaryTranslation().text,
-                saveSelectionButtonTitle: solution.templateTexts.acceptSelectedButton.primaryTranslation().text,
-                privacyDescription: solution.consentItems.first { $0.type == .privacyPolicy}?.translations.primaryTranslation().shortText ?? "",
-                privacyPolicyLongtext: solution.consentItems.first { $0.type == .privacyPolicy}?.translations.primaryTranslation().longText ?? "",
-                readMoreButton: solution.templateTexts.readMoreButton.primaryTranslation().text
+                title: overrides?.title ?? title,
+                acceptAllButtonTitle: 
+                    overrides?.acceptAllButtonTitle ?? solution.templateTexts.acceptAllButton.primaryTranslation().text,
+                saveSelectionButtonTitle: 
+                    overrides?.saveSelectionButtonTitle ?? solution.templateTexts.acceptSelectedButton.primaryTranslation().text,
+                privacyDescription: 
+                    solution.consentItems.first { $0.type == .privacyPolicy}?.translations.primaryTranslation().shortText ?? "",
+                privacyPolicyLongtext: 
+                    solution.consentItems.first { $0.type == .privacyPolicy}?.translations.primaryTranslation().longText ?? "",
+                readMoreButton: 
+                    overrides?.readMoreButton ?? solution.templateTexts.readMoreButton.primaryTranslation().text,
+                requiredSectionHeader:
+                    overrides?.requiredSectionHeader ?? solution.templateTexts.requiredTableSectionHeader?.primaryTranslation().text ?? "Required",
+                optionalSectionHeader:
+                    overrides?.optionalSectionHeader ?? solution.templateTexts.optionalTableSectionHeader?.primaryTranslation().text ?? "Optional",
+                readMoreScreenHeader:
+                    overrides?.readMoreScreenHeader ?? solution.templateTexts.readMoreScreenHeader?.primaryTranslation().text ?? ""
             )
         
             self.onDataLoaded?(data)

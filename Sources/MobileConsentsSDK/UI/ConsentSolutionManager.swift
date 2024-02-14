@@ -10,6 +10,7 @@ protocol ConsentSolutionManagerProtocol: ConsentItemProvider {
     var areAllRequiredConsentItemsSelected: Bool { get }
     var hasRequiredConsentItems: Bool { get }
     var settings: [ConsentItem] { get }
+    var localizationOverride: [Locale: LabelText] { get }
     func loadConsentSolutionIfNeeded(completion: @escaping (Result<ConsentSolution, Error>) -> Void)
     
     func rejectAllConsentItems(completion: @escaping (Error?) -> Void)
@@ -18,6 +19,8 @@ protocol ConsentSolutionManagerProtocol: ConsentItemProvider {
 }
 
 final class ConsentSolutionManager: ConsentSolutionManagerProtocol {
+    var localizationOverride: [Locale: LabelText]
+    
     static let consentItemSelectionDidChange = Notification.Name(rawValue: "com.cookieinformation.consentItemSelectionDidChange")
     
     var areAllRequiredConsentItemsSelected: Bool {
@@ -62,12 +65,14 @@ final class ConsentSolutionManager: ConsentSolutionManagerProtocol {
         consentSolutionId: String,
         mobileConsents: MobileConsentsProtocol,
         notificationCenter: NotificationCenter = NotificationCenter.default,
-        asyncDispatcher: AsyncDispatcher = DispatchQueue.main
+        asyncDispatcher: AsyncDispatcher = DispatchQueue.main,
+        localizationOverride: [Locale: LabelText] = [:]
     ) {
         self.consentSolutionId = consentSolutionId
         self.mobileConsents = mobileConsents
         self.notificationCenter = notificationCenter
         self.asyncDispatcher = asyncDispatcher
+        self.localizationOverride = localizationOverride
     }
     
     func loadConsentSolutionIfNeeded(completion: @escaping (Result<ConsentSolution, Error>) -> Void) {
@@ -126,6 +131,10 @@ final class ConsentSolutionManager: ConsentSolutionManagerProtocol {
     
     func acceptSelectedConsentItems(completion: @escaping (Error?) -> Void) {
         postConsent(selectedConsentItemIds: selectedConsentItemIds, completion: completion)
+    }
+    
+    func setLocalizationOverride(_ labels: NSDictionary) {
+        
     }
     
     private func postConsent(selectedConsentItemIds: Set<String>, completion: @escaping (Error?) -> Void) {

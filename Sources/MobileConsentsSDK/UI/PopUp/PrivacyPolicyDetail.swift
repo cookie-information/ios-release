@@ -13,10 +13,16 @@ public class PrivacyPolicyDetail: UIViewController {
     }()
     private lazy var barItem: UINavigationItem = {
         let item = UINavigationItem()
-        item.leftBarButtonItem = UIBarButtonItem(image: UIImage(named: "xmark", in: .module, compatibleWith: nil), style: .plain, target: self, action: #selector(close))
-        item.leftBarButtonItem?.tintColor = accentColor
+        item.leftBarButtonItem = UIBarButtonItem(image: UIImage(
+                                                            named: "xmark",
+                                                            in: .module,
+                                                            compatibleWith: nil),
+                                                 style: .plain,
+                                                 target: self,
+                                                 action: #selector(close))
         
-        item.title = "Privacy policy"
+        item.leftBarButtonItem?.tintColor = accentColor
+        item.title = self.title
         return item
     }()
     
@@ -51,10 +57,13 @@ public class PrivacyPolicyDetail: UIViewController {
     }()
     private var accentColor: UIColor
     private var text: String
-    public init(text: String, accentColor: UIColor) {
+    
+    public init(text: String, accentColor: UIColor,
+                title: String) {
         self.accentColor = accentColor
         self.text = text
         super.init(nibName: nil, bundle: nil)
+        self.title = title
         
     }
     required init?(coder: NSCoder) {

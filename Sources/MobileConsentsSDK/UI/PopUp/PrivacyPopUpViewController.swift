@@ -86,6 +86,7 @@ final class PrivacyPopUpViewController: UIViewController, PrivacyPopupProtocol {
     private let viewModel: PrivacyPopUpViewModelProtocol
     private var sections = [Section]()
     private let fontSet: FontSet
+    private var data: PrivacyPopUpData? = nil
     
     init(viewModel: PrivacyPopUpViewModelProtocol, accentColor: UIColor, fontSet: FontSet) {
         self.viewModel = viewModel
@@ -185,6 +186,7 @@ final class PrivacyPopUpViewController: UIViewController, PrivacyPopupProtocol {
     private func setupViewModel() {
         viewModel.onDataLoaded = { [weak self] data in
             guard let self = self else { return }
+            self.data = data
             self.sections = data.sections
             self.tableView.reloadData()
             self.titleView.text = data.title
@@ -228,7 +230,7 @@ extension PrivacyPopUpViewController: UITableViewDataSource, UITableViewDelegate
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection
                    section: Int) -> String? {
-        return section == 0 ? "Required" : "Optional"
+        return section == 0 ? (self.data?.requiredSectionHeader ?? "Required") : (self.data?.optionalSectionHeader ?? "Optional")
     }
     
     func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
@@ -247,7 +249,7 @@ extension PrivacyPopUpViewController {
     }
     
     @objc func openPrivacyPolicy() {
-        let detailView = PrivacyPolicyDetail(text: privacyPolicyLongtext, accentColor: accentColor)
+        let detailView = PrivacyPolicyDetail(text: privacyPolicyLongtext, accentColor: accentColor, title: data?.readMoreScreenHeader ?? "Privacy policy")
                
         present(detailView, animated: true)
     }
@@ -256,7 +258,7 @@ extension PrivacyPopUpViewController {
 
 extension String {
     init(key: String) {
-        self = NSLocalizedString(key, bundle: Bundle(for: PrivacyPopUpViewController.self), comment: "")
+        self = NSLocalizedString(key, bundle: .module, comment: "")
     }
 }
 

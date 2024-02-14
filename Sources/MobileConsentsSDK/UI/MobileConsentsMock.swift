@@ -62,19 +62,37 @@ private let mockConsentSolution = ConsentSolution(
         ),
         privacyPreferencesTabLabel: Translated(
             translations: [
-                TemplateTranslation(language: "EN", text: "Privacy preferences tab")
+                TemplateTranslation(language: "EN", text: "Privacy center title")
             ],
             primaryLanguage: languageCode
         ),
         poweredByCoiLabel: Translated(
             translations: [
-                TemplateTranslation(language: "EN", text: "Powered by Cookie Information")
+                TemplateTranslation(language: "EN", text: "Privacy preferences tab")
             ],
             primaryLanguage: languageCode
         ),
         consentPreferencesLabel: Translated(
             translations: [
-                TemplateTranslation(language: "EN", text: "Consent preferences label")
+                TemplateTranslation(language: "EN", text: "Powered by Cookie Information")
+            ],
+            primaryLanguage: languageCode
+        ),
+        readMoreScreenHeader: Translated(
+            translations: [
+                TemplateTranslation(language: "EN", text: "Privacy policy")
+            ],
+            primaryLanguage: languageCode
+        ),
+        optionalTableSectionHeader: Translated(
+            translations: [
+                TemplateTranslation(language: "EN", text: "Optional")
+            ],
+            primaryLanguage: languageCode
+        ),
+        requiredTableSectionHeader: Translated(
+            translations: [
+                TemplateTranslation(language: "EN", text: "Required")
             ],
             primaryLanguage: languageCode
         )
