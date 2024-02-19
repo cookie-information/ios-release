@@ -1,4 +1,7 @@
 import Foundation
+
+#if !SWIFT_PACKAGE
 internal extension Bundle {
-    static var current: Bundle { Bundle(for: MobileConsents.self) }
+  static var module:Bundle { Bundle(for: MobileConsents.self) }
 }
+#endif

@@ -4,12 +4,12 @@ extension String {
     var iso8601withFractionalSeconds: Date? { return Formatter.iso8601withFractionalSeconds.date(from: self) }
 }
 
-extension String {
+internal extension String {
     var localized: String {
-        NSLocalizedString(self, bundle: Bundle.current, comment: "")
+        NSLocalizedString(self, bundle: Bundle.module, comment: "")
     }
     
-    internal var isValidURL:Bool {
+    var isValidURL:Bool {
         let urlPattern = #"^(https?|ftp)://[^\s/$.?#].[^\s]*$"#  // Adjust the pattern as needed
         let regex = try! NSRegularExpression(pattern: urlPattern)
         
