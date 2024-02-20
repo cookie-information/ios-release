@@ -5,7 +5,7 @@ internal extension Bundle {
     static var module:Bundle {
         
         let podBundle = Bundle(for: MobileConsents.self)
-        if let bundleUrl = podBunde.url(forResource: "MobileConsentsSDK", withExtension: "bundle") {
+        if let bundleUrl = podBundle.url(forResource: "MobileConsentsSDK", withExtension: "bundle") {
             return Bundle(url: bundleUrl )
         } else {
             return podBundle
