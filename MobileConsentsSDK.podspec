@@ -8,7 +8,7 @@ Pod::Spec.new do |spec|
   spec.source       = { :git => 'https://github.com/cookie-information/ios-release.git', :tag => spec.version.to_s }
   
   spec.source_files = 'Sources/MobileConsentsSDK/**/*.swift'
-  spec.resource = 'Sources/Resources/*'
+  spec.resource = 'Sources/MobileConsentsSDK/Resources/*'
   spec.swift_version = '5.0'
 
 end
