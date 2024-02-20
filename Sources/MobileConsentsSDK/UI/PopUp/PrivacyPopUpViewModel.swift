@@ -86,7 +86,7 @@ public final class PrivacyPopUpViewModel: NSObject, PrivacyPopUpViewModelProtoco
                 optionalSectionHeader:
                     overrides?.optionalSectionHeader ?? solution.templateTexts.optionalTableSectionHeader?.primaryTranslation().text ?? "Optional",
                 readMoreScreenHeader:
-                    overrides?.readMoreScreenHeader ?? solution.templateTexts.readMoreScreenHeader?.primaryTranslation().text ?? ""
+                    overrides?.readMoreScreenHeader ?? solution.templateTexts.readMoreScreenHeader?.primaryTranslation().text ?? "Privacy Policy"
             )
         
             self.onDataLoaded?(data)
