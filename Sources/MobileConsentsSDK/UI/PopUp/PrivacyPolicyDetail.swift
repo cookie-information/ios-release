@@ -15,7 +15,7 @@ public class PrivacyPolicyDetail: UIViewController {
         let item = UINavigationItem()
         item.leftBarButtonItem = UIBarButtonItem(image: UIImage(
                                                             named: "xmark",
-                                                            in: .module,
+                                                            in: Bundle.module,
                                                             compatibleWith: nil),
                                                  style: .plain,
                                                  target: self,

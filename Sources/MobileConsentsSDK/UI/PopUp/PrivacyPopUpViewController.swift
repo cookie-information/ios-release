@@ -196,7 +196,7 @@ final class PrivacyPopUpViewController: UIViewController, PrivacyPopupProtocol {
             self.privacyDescription.text = data.privacyDescription
             self.privacyPolicyLongtext = data.privacyPolicyLongtext
             self.readMoreButton.setTitle("\(data.readMoreButton) ", for: .normal)
-            let chevron = UIImage(named: "chevron", in: .module, compatibleWith: nil)
+            let chevron = UIImage(named: "chevron", in: Bundle.module, compatibleWith: nil)
             
             self.readMoreButton.setImage(chevron, for: .normal)
             self.readMoreButton.imageEdgeInsets = UIEdgeInsets(top: 2, left: 0, bottom: 2, right: 0)
@@ -258,7 +258,7 @@ extension PrivacyPopUpViewController {
 
 extension String {
     init(key: String) {
-        self = NSLocalizedString(key, bundle: .module, comment: "")
+        self = NSLocalizedString(key, bundle: Bundle.module, comment: "")
     }
 }
 
