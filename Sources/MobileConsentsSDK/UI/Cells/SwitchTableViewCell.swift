@@ -18,7 +18,7 @@ final class SwitchTableViewCell: BaseTableViewCell {
         label.adjustsFontForContentSizeCategory = true
         label.font = .systemFont(ofSize: 14)
         label.numberOfLines = 0
-        label.isEnabled = false
+        label.textColor = UIColor.consentText
         
         return label
     }()
@@ -50,6 +50,7 @@ final class SwitchTableViewCell: BaseTableViewCell {
         titleView.accessibilityLabel = "\(viewModel.title) \n \(viewModel.description)"
         
         descriptionView.font = UIFontMetrics(forTextStyle: .body).scaledFont(for: viewModel.fontSet.body)
+    
         if viewModel.description.containsHtml, let attributedString = viewModel.description.attributedHtmlString {
             descriptionView.attributedText = attributedString
 
