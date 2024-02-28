@@ -63,7 +63,7 @@ public final class PrivacyPopUpViewModel: NSObject, PrivacyPopUpViewModelProtoco
             let optionalSection = PopUpConsentsSection(viewModels: self.consentViewModels(from: solution))
             let requiredSection = PopUpConsentsSection(viewModels: self.consentViewModels(from: solution, required: true))
             
-            let overrides = consentSolutionManager.localizationOverride[Locale(identifier: solution.primaryLanguage)]
+            let overrides = self.consentSolutionManager.localizationOverride[Locale(identifier: solution.primaryLanguage)]
       
             let data = PrivacyPopUpData(
                 sections: [

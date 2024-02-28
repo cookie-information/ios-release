@@ -3,13 +3,14 @@ import UIKit
 extension UIColor {
     static let headerBackground = UIColor.adaptive(light: .init(hex: 0xF9F9F9), dark: .init(hex: 0x1C1C1E))
     static let headerText = UIColor.adaptive(light: .init(hex: 0xA0A0A0), dark: .init(hex: 0x8D8D93))
-    static let consentText = UIColor.adaptive(light: .init(hex: 0x596075), dark: .init(hex: 0x989899))
+    static let consentText = UIColor.adaptive(light: .init(hex: 0x616263), dark: .init(hex: 0xA8A8A9))
+    static let consentTableSectionHeaderText = UIColor.adaptive(light: .init(hex: 0x515153), dark: .init(hex: 0xB5B5BC))
     static let link = UIColor.adaptive(light: .black, dark: .white)
     static let privacyCenterSeparator = UIColor.adaptive(light: .init(hex: 0xE4E8F0), dark: .init(hex: 0x47474A))
     static let privacyCenterAcceptButton = UIColor.adaptive(light: .init(hex: 0x2E5BFF), dark: .white)
     static let privacyCenterAcceptButtonTitle = UIColor.adaptive(light: .systemBlue, dark: .systemBlue)
     static let privacyCenterAcceptButtonDisabledTitle = UIColor.adaptive(light: .systemGray, dark: .systemGray)
-    static let privacyCenterText = UIColor.adaptive(light: .init(hex: 0x596075), dark: .init(hex: 0x8D8D93))
+    static let privacyCenterText = UIColor.adaptive(light: .init(hex: 0x616263), dark: .init(hex: 0xA8A8A9))
     static let privacyCenterBackground = UIColor.adaptive(light: .white, dark: .black)
     static let privacyCenterSwitch = UIColor.adaptive(light: .init(hex: 0x5DCB2F), dark: .systemGreen)
     static let privacyCenterSwitchThumb = UIColor.adaptive(light: .white, dark: .white)
@@ -20,7 +21,7 @@ extension UIColor {
     static let popUpButtonDisabled = UIColor.adaptive(light: .init(hex: 0xC1C1C1), dark: .init(hex: 0x989899))
     static let popUpGradient = UIColor.adaptive(light: .lightGray, dark: .init(hex: 0x1D1D1D))
     static let activityIndicator = UIColor.adaptive(light: .init(hex: 0x2E5BFF), dark: .white)
-    static let navigationBarbackground = UIColor.adaptive(light: .init(hex: 0xF9F9F9), dark: .init(hex: 0x2A2A2A))
+    static let navigationBarbackground = UIColor.adaptive(light: .init(hex: 0xFCFCFC), dark: .init(hex: 0x2A2A2A))
 }
 
 extension UIColor {

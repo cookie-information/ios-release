@@ -28,8 +28,10 @@ final class PrivacyPopUpViewController: UIViewController, PrivacyPopupProtocol {
     private lazy var titleView: UILabel = {
         let view = UILabel()
         view.text = "Privacy"
+        view.lineBreakMode = .byWordWrapping
         view.adjustsFontForContentSizeCategory = true
         view.font = UIFontMetrics(forTextStyle: .largeTitle).scaledFont(for: fontSet.largeTitle)
+        view.numberOfLines = 0
         return view
     }()
     
@@ -150,11 +152,11 @@ final class PrivacyPopUpViewController: UIViewController, PrivacyPopupProtocol {
             
             titleView.topAnchor.constraint(equalTo: scrollContainer.topAnchor),
             titleView.leadingAnchor.constraint(equalTo: scrollContainer.layoutMarginsGuide.leadingAnchor),
-            titleView.trailingAnchor.constraint(equalTo: scrollContainer.trailingAnchor),
+            titleView.trailingAnchor.constraint(equalTo: scrollContainer.layoutMarginsGuide.trailingAnchor),
             
             privacyDescription.topAnchor.constraint(equalTo: titleView.bottomAnchor, constant: 15),
             privacyDescription.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
-            privacyDescription.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            privacyDescription.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
             
             readMoreButton.topAnchor.constraint(equalTo: privacyDescription.bottomAnchor, constant: 15),
             readMoreButton.leadingAnchor.constraint(equalTo: scrollContainer.layoutMarginsGuide.leadingAnchor),

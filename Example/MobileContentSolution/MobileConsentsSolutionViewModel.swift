@@ -4,17 +4,13 @@ import MobileConsentsSDK
 
 final class MobileConsentSolutionViewModel {
     public lazy var mobileConsentsSDK = MobileConsents(clientID: clientId,
-                                                   clientSecret: clientSecret,
-                                                  solutionId: solutionId,
-                                                  accentColor: .systemGreen,
-                                                   fontSet: FontSet(largeTitle: .boldSystemFont(ofSize: 34),
-                                                                    body: .monospacedSystemFont(ofSize: 14, weight: .regular),
-                                                                    bold: .monospacedSystemFont(ofSize: 14, weight: .bold)),
+                                                       clientSecret: clientSecret,
+                                                       solutionId: solutionId,
                                                        localizationOverride: [Locale.init(identifier: "en"): LabelText(
                                                         title: "Data privacy",
                                                         readMoreScreenHeader: "Data privacy explained"
                                                        )],
-                                                    enableNetworkLogger: true)
+                                                       enableNetworkLogger: true)
     
     
     
@@ -30,7 +26,7 @@ final class MobileConsentSolutionViewModel {
     
     private var sectionTypes: [MobileConsentsSolutionSectionType] {
         guard consentSolution != nil else { return [] }
-    
+        
         var sectionTypes: [MobileConsentsSolutionSectionType] = [.info]
         if !items.isEmpty {
             sectionTypes.append(.items)
@@ -38,7 +34,7 @@ final class MobileConsentSolutionViewModel {
         return sectionTypes
     }
     var consentSolution: ConsentSolution?
-
+    
     var savedConsents: [UserConsent] {
         return mobileConsentsSDK.getSavedConsents()
     }
@@ -59,7 +55,7 @@ final class MobileConsentSolutionViewModel {
     }
     
     
-   
+    
     
     func isItemSelected(_ item: ConsentItem) -> Bool {
         return selectedItems.contains(where: { $0.id == item.id })
@@ -77,8 +73,8 @@ final class MobileConsentSolutionViewModel {
                                             title: "Data privacy"
                                            )],
                                            enableNetworkLogger: true
-                                                        )
-
+        )
+        
         mobileConsentsSDK.showPrivacyPopUp(customViewType: style.customController) { settings in
             settings.forEach { consent in
                 switch consent.purpose {
@@ -93,7 +89,7 @@ final class MobileConsentSolutionViewModel {
                     if consent.consentItem.id == "<UUID of consent item>" {
                         // handle user defined consent items such as age consent based on it's UUID
                     }
-
+                    
                 }
                 print("Consent given for:\(consent.purpose): \(consent.isSelected)")
             }
@@ -149,5 +145,5 @@ struct PrivacyPopupStyle {
     static let customController: PrivacyPopupStyle = {
         PrivacyPopupStyle(accentColor: .systemPink, fontSet: .standard, customController: CustomPopup.self)
     }()
-
+    
 }
