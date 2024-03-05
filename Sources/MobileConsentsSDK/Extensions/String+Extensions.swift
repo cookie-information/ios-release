@@ -10,7 +10,7 @@ internal extension String {
     }
     
     var isValidURL:Bool {
-        let urlPattern = #"^(https?|ftp)://[^\s/$.?#].[^\s]*$"#  // Adjust the pattern as needed
+        let urlPattern = #"^(https?|ftp)://[^\s/$.?#].[^\s]*$"#
         let regex = try! NSRegularExpression(pattern: urlPattern)
         
         let range = NSRange(location: 0, length: self.utf16.count)

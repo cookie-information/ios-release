@@ -100,7 +100,11 @@ public class PrivacyPolicyDetail: UIViewController {
                 richTextView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
                 richTextView.bottomAnchor.constraint(equalTo: deviceInfoLabel.topAnchor),
             ]
-            richTextView.htmlText = self.text.wrappedInHtml
+            if self.text.containsHtml {
+                richTextView.htmlText = self.text.wrappedInHtml
+            } else {
+                richTextView.text = self.text
+            }
         }
         NSLayoutConstraint.activate([
             

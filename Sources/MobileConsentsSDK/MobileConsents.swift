@@ -29,8 +29,11 @@ public final class MobileConsents: NSObject, MobileConsentsProtocol {
     ///   - uiLanguageCode: Language code used for translations in built-in privacy screens. If not provided, current app language is used. If translations are not available in given language, English is used.
     ///   - clientID: the client identifier, can be obtained from Cookie Information dashboard
     ///   - clientSecret: the client secret, can be obtained from Cookie Information dashboard
+    ///   - solutionId:  the solution id, can be obtained from Cookie Information dashboard
     ///   - accentColor: determines the tint of the colored elements, such as buttons in the default UI
     ///   - fontSet: overrides the system font. Make sure to test thoroughly when chosing your own font to prevent visual issues in your app
+    ///   - localizationOverride: a dictionary of Locale (key) and LabelText (value) used to override static UI translations
+    ///   - enableNetworkLogger: a flag that turns on the network logger, it is used for debugging purposes, it should be off for production buildst
     @objc public convenience init(uiLanguageCode: String? = Bundle.main.preferredLocalizations.first,
                                   clientID: String,
                                   clientSecret: String,
