@@ -264,4 +264,4 @@ During normal operation the identifier is not required, however in case the end 
 
 <img src="Documentation/deviceId1.png" width="300px">
 <img src="Documentation/deviceId2.png" width="300px">
-
+               
