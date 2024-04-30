@@ -17,7 +17,8 @@ let package = Package(
     targets: [
         .target(
             name: "MobileConsentsSDK",
-            dependencies: []),
+            dependencies: [],
+            resources: [.copy("Resources/PrivacyInfo.xcprivacy")]),
         .testTarget(
             name: "MobileConsentsSDKTests",
             dependencies: ["MobileConsentsSDK"])
