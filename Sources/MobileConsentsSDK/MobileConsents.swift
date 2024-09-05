@@ -166,6 +166,7 @@ public final class MobileConsents: NSObject, MobileConsentsProtocol {
         synchronizeIfNeeded()
         self.fetchConsentSolution { result in
             guard case let .success(value) = result else {
+                completion?([])
                 return
             }
             
