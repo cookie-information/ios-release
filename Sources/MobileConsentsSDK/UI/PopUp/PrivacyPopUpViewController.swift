@@ -15,10 +15,32 @@ final class PrivacyPopUpViewController: UIViewController, PrivacyPopupProtocol {
         return bar
     }()
     
+    private lazy var leftButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.addTarget(self, action: #selector(acceptSelected), for: .touchUpInside)
+        button.setTitle("Accept selected", for: .normal)
+        button.titleLabel?.numberOfLines = 2
+        button.titleLabel?.lineBreakMode = .byWordWrapping
+        button.titleLabel?.font = UIFont.preferredFont(forTextStyle: .body)
+        button.titleLabel?.adjustsFontForContentSizeCategory = true
+        return button
+    }()
+    
+    private lazy var rightButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.addTarget(self, action: #selector(acceptAll), for: .touchUpInside)
+        button.setTitle("Accept all", for: .normal)
+        button.titleLabel?.numberOfLines = 2
+        button.titleLabel?.lineBreakMode = .byWordWrapping
+        button.titleLabel?.font = UIFont.preferredFont(forTextStyle: .body)
+        button.titleLabel?.adjustsFontForContentSizeCategory = true
+        return button
+    }()
+    
     private lazy var barItem: UINavigationItem = {
         let item = UINavigationItem()
-        item.leftBarButtonItem = UIBarButtonItem(title: "Accept selected", style: .plain, target: self, action: #selector(acceptSelected))
-        item.rightBarButtonItem = UIBarButtonItem(title: "Accept all", style: .plain, target: self, action: #selector(acceptAll))
+        item.leftBarButtonItem = UIBarButtonItem(customView: leftButton)
+        item.rightBarButtonItem =  UIBarButtonItem(customView: rightButton)
         item.leftBarButtonItem?.tintColor = accentColor
         item.rightBarButtonItem?.tintColor = accentColor
         
@@ -193,8 +215,11 @@ final class PrivacyPopUpViewController: UIViewController, PrivacyPopupProtocol {
             self.tableView.reloadData()
             self.titleView.text = data.title
             
-            self.barItem.leftBarButtonItem?.title = data.saveSelectionButtonTitle
-            self.barItem.rightBarButtonItem?.title = data.acceptAllButtonTitle
+            self.leftButton.setTitle(data.saveSelectionButtonTitle, for: .normal)
+            self.rightButton.setTitle(data.acceptAllButtonTitle, for: .normal)
+            self.leftButton.sizeToFit()
+            self.rightButton.sizeToFit()
+
             self.privacyDescription.text = data.privacyDescription
             self.privacyPolicyLongtext = data.privacyPolicyLongtext
             self.readMoreButton.setTitle("\(data.readMoreButton) ", for: .normal)
