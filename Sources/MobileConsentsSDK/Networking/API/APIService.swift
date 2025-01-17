@@ -7,7 +7,7 @@ enum APIService: EndpointType {
     
     var environmentBaseURL: String {
         switch NetworkManager.environment {
-        case .production: return "https://cdnapi-prod.azureedge.net/v1/"
+        case .production: return "https://cdnapi.app.cookieinformation.com/v1/"
         case .staging: return "https://cdnapi-staging.azureedge.net/v1/"
         }
     }
