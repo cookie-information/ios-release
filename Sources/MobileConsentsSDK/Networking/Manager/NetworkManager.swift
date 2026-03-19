@@ -88,16 +88,19 @@ final class NetworkManager {
         provider.request(.authorize(clientID: clientID,
                                     clientSecret: clientSecret)) { data, response, error in
             let decoder = JSONDecoder()
-          decoder.keyDecodingStrategy = .convertFromSnakeCase
-          guard let data = data else {
-            guard let error = error else  { return }
-            completion(.failure(error))
-            return }
+            decoder.keyDecodingStrategy = .convertFromSnakeCase
+            guard let data = data else {
+                completion(.failure(error ?? NetworkResponseError.noData))
+                return
+            }
           
-          let token = try? decoder.decode( AuthResponse.self, from: data)
-          self.token = token
-          guard let token = token else {return}
-          completion(.success(token))
+            do {
+                let token = try decoder.decode(AuthResponse.self, from: data)
+                self.token = token
+                completion(.success(token))
+            } catch {
+                completion(.failure(error))
+            }
         }
     }
     
@@ -105,9 +108,12 @@ final class NetworkManager {
       if let token = token, token.expiresIn > Date() {
         postConsent(consent: consent, completion: completion)
       } else {
-        authorize { repsponse in
-          if case .success(_) = repsponse {
+        authorize { response in
+          switch response {
+          case .success:
             self.postConsent(consent, completion: completion)
+          case .failure(let error):
+            completion(error)
           }
         }
       }
