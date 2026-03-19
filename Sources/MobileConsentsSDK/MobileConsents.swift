@@ -128,6 +128,24 @@ public final class MobileConsents: NSObject, MobileConsentsProtocol {
         completion: (([UserConsent])->())? = nil,
         errorHandler: ((Error)->())? = nil
     ) {
+        synchronizeIfNeeded()
+        presentPrivacyPopUp(
+            customViewType: customViewType,
+            onViewController: presentingViewController,
+            animated: animated,
+            completion: completion,
+            errorHandler: errorHandler
+        )
+    }
+    
+    
+    private func presentPrivacyPopUp(
+        customViewType: PrivacyPopupProtocol.Type? = nil,
+        onViewController presentingViewController: UIViewController? = nil,
+        animated: Bool = true,
+        completion: (([UserConsent])->())? = nil,
+        errorHandler: ((Error)->())? = nil
+    ) {
         DispatchQueue.main.async {
             let presentingViewController = presentingViewController ?? UIApplication.shared.windows.first { $0.isKeyWindow }?.topViewController
             
@@ -135,7 +153,6 @@ public final class MobileConsents: NSObject, MobileConsentsProtocol {
                 consentSolutionId: self.solutionId,
                 mobileConsents: self,
                 localizationOverride: self.localizationOverride
-
                 )
             
             let router = Router(consentSolutionManager: consentSolutionManager, accentColor: self.accentColor, fontSet: self.fontSet)
@@ -143,9 +160,7 @@ public final class MobileConsents: NSObject, MobileConsentsProtocol {
            
             router.showPrivacyPopUp(popupController: customViewType, animated: animated, completion: completion, error: errorHandler)
         }
-       
     }
-    
     
     /// Method responsible for showing Privacy Pop Up screen if there has not been a consent recorded or if the consent
     /// - Parameters:
@@ -176,7 +191,7 @@ public final class MobileConsents: NSObject, MobileConsentsProtocol {
             
             guard !storedConsents.isEmpty && (storedVersionId == versionId || ignoreVersionChanges) else {
                 self.removeStoredConsents()
-                self.showPrivacyPopUp(customViewType: customViewType, completion: completion, errorHandler: errorHandler)
+                self.presentPrivacyPopUp(customViewType: customViewType, completion: completion, errorHandler: errorHandler)
                 return
             }
             
