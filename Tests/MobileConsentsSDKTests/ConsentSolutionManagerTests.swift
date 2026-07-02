@@ -4,14 +4,14 @@ import XCTest
 final class ConsentSolutionManagerTests: XCTestCase {
     private var sut: ConsentSolutionManager!
     private var notificationCenter: NotificationCenter!
-    private var mobileConsents: MobileConsentsMock!
+    private var mobileConsents: MobileConsentsProtocolMock!
 
     private var notificationCount: Int!
     private var observationToken: Any!
 
     override func setUp() {
-        notificationCenter = .default
-        mobileConsents = MobileConsentsMock()
+        notificationCenter = NotificationCenter()
+        mobileConsents = MobileConsentsProtocolMock()
 
         sut = ConsentSolutionManager(
             consentSolutionId: "TestConsentSolutionId",
@@ -202,7 +202,7 @@ final class ConsentSolutionManagerTests: XCTestCase {
     }
 }
 
-private final class MobileConsentsMock: MobileConsentsProtocol {
+private final class MobileConsentsProtocolMock: MobileConsentsProtocol {
     var fetchConsentSolutionResult: Result<ConsentSolution, Error>!
     var postConsentResult: Error?
 

@@ -26,7 +26,7 @@ final class ConsentSolutionManager: ConsentSolutionManagerProtocol {
     var areAllRequiredConsentItemsSelected: Bool {
         consentSolution?
             .consentItems
-            .filter { $0.required && ($0.type != .privacyPolicy || $0.type != .privacyPolicy )}
+            .filter { $0.required && $0.type != .privacyPolicy}
             .map(\.id)
             .allSatisfy(selectedConsentItemIds.contains)
             ??
@@ -36,19 +36,19 @@ final class ConsentSolutionManager: ConsentSolutionManagerProtocol {
     var hasRequiredConsentItems: Bool {
         !(consentSolution?
             .consentItems
-            .filter { $0.required && ($0.type != .privacyPolicy || $0.type != .privacyPolicy ) }
+            .filter { $0.required && $0.type != .privacyPolicy }
             .isEmpty
             ??
             true)
     }
     
     public var settings: [ConsentItem] {
-        consentSolution?.consentItems.filter { ($0.type != .privacyPolicy || $0.type != .privacyPolicy )} ?? []
+        consentSolution?.consentItems.filter { $0.type != .privacyPolicy} ?? []
     }
     
     private var allSettingsItemIds: [String] {
         consentSolution?.consentItems
-            .filter {($0.type != .privacyPolicy || $0.type != .privacyPolicy ) }
+            .filter {$0.type != .privacyPolicy }
             .map(\.id) ?? []
     }
     
@@ -140,9 +140,7 @@ final class ConsentSolutionManager: ConsentSolutionManagerProtocol {
     private func postConsent(selectedConsentItemIds: Set<String>, completion: @escaping (Error?) -> Void) {
         guard let consentSolution = consentSolution else { return }
         
-        let infoConsentItemIds = consentSolution.consentItems.filter { $0.type == .privacyPolicy }.map(\.id)
-        let givenConsentItemIds = selectedConsentItemIds.union(infoConsentItemIds)
-        let userConsents = consentSolution.consentItems.filter {($0.type != .privacyPolicy || $0.type != .privacyPolicy )}.map {UserConsent(consentItem: $0, isSelected: selectedConsentItemIds.contains($0.id) || $0.required)}
+        let userConsents = consentSolution.consentItems.filter {$0.type != .privacyPolicy}.map {UserConsent(consentItem: $0, isSelected: selectedConsentItemIds.contains($0.id) || $0.required)}
         
         let consent = Consent(consentSolutionId: consentSolution.id, consentSolutionVersionId: consentSolution.versionId, userConsents: userConsents)
 

@@ -91,8 +91,8 @@ struct LocalStorageManager: LocalStorageManagerProtocol {
             } catch {
                 debugPrint(error)
             }
-            userDefaults.set(consents, forKey: consentsKey)
         }
+        userDefaults.set(consents, forKey: consentsKey)
     }
     
     

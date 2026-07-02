@@ -32,9 +32,7 @@ final class Router: RouterProtocol {
 
         guard let viewController =  (popupController == nil ? PrivacyPopUpViewController(viewModel: viewModel, accentColor: accentColor, fontSet: fontSet) : popupController!.init(viewModel: viewModel) ) as? UIViewController else { return }
        
-        if #available(iOS 13.0, *) {
-            viewController.isModalInPresentation = true
-        }
+        viewController.isModalInPresentation = true
         rootViewController?.topViewController.present(viewController, animated: animated)
     }
     

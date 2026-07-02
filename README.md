@@ -1,6 +1,12 @@
 
 # Mobile Consents SDK
 
+## Requirements
+- iOS 15.0 or newer
+- Swift 5.10 or newer (Xcode 15.3+)
+
+> **Note:** Version 2.0.0 raises the minimum supported iOS version from 11.0 to 15.0. If your app needs to support older iOS versions, stay on version 1.5.8. See [CHANGELOG.md](CHANGELOG.md) for release history.
+
 ## Installation
 ### Swift Package Manager
 MobileConsentsSDK is available through the Swift Package Manager (SPM) and CocoaPods. For the best experience we recommend using SPM by adding a new Package Dependency to your XCode project with the following repository URL:
@@ -41,7 +47,8 @@ MobileConsents *mobileConsents = [[MobileConsents alloc] initWithUiLanguageCode:
                                                               solutionId:@"<SOLUTION ID>"
                                                              accentColor: UIColor.systemBlueColor
                                                                  fontSet: FontSet.standard
-                                                                  enableNetworkLogger: YES];
+                                                    localizationOverride: @{}
+                                                     enableNetworkLogger: YES];
 ```
 
 # Using built-in mobile consents UI
