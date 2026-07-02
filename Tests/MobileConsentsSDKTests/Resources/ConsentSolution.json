@@ -2,67 +2,67 @@
   "universalConsentSolutionVersionId": "00000000-0000-4000-8000-000000000000",
   "universalConsentSolutionId": "9187d0f0-9e25-469b-9125-6a63b1b22b12",
   "title": [
-      {
-        "language": "EN",
-        "text": "Privacy title"
-      }
+    {
+      "language": "EN",
+      "text": "Privacy title"
+    }
   ],
-  "description":  [
-      {
-        "language": "EN",
-        "text": "Privacy description"
-      }
+  "description": [
+    {
+      "language": "EN",
+      "text": "Privacy description"
+    }
   ],
   "templateTexts": {
-    "privacyCenterButton":  [
+    "privacyCenterButton": [
       {
         "language": "EN",
         "text": "Privacy center button title"
       }
     ],
-    "rejectAllButton":  [
+    "rejectAllButton": [
       {
         "language": "EN",
         "text": "Reject all button title"
       }
     ],
-    "acceptAllButton":  [
+    "acceptAllButton": [
       {
         "language": "EN",
         "text": "Accept all button title"
       }
     ],
-    "acceptSelectedButton":  [
+    "acceptSelectedButton": [
       {
         "language": "EN",
         "text": "Accept selected button title"
       }
     ],
-    "savePreferencesButton":  [
+    "savePreferencesButton": [
       {
         "language": "EN",
         "text": "Save preferences button title"
       }
     ],
-    "privacyCenterTitle":  [
+    "privacyCenterTitle": [
       {
         "language": "EN",
         "text": "Privacy center title"
       }
     ],
-    "privacyPreferencesTabLabel":  [
+    "privacyPreferencesTabLabel": [
       {
         "language": "EN",
         "text": "Privacy preferences tab"
       }
     ],
-    "poweredByCoiLabel":  [
+    "poweredByCoiLabel": [
       {
         "language": "EN",
         "text": "Powered by Cookie Information"
       }
     ],
-    "consentPreferencesLabel":  [
+    "consentPreferencesLabel": [
       {
         "language": "EN",
         "text": "Consent preferences label"
@@ -73,7 +73,7 @@
     {
       "universalConsentItemId": "a10853b5-85b8-4541-a9ab-fd203176bdce",
       "required": true,
-      "type": "setting",
+      "type": "necessary",
       "translations": [
         {
           "language": "EN",
@@ -85,7 +85,7 @@
     {
       "universalConsentItemId": "ef7d8f35-fc1a-4369-ada2-c00cc0eecc4b",
       "required": false,
-      "type": "setting",
+      "type": "functional",
       "translations": [
         {
           "language": "EN",
@@ -97,7 +97,7 @@
     {
       "universalConsentItemId": "7d477dbf-5f88-420f-8dfc-2506907ebe07",
       "required": true,
-      "type": "info",
+      "type": "privacy policy",
       "translations": [
         {
           "language": "EN",
@@ -109,7 +109,7 @@
     {
       "universalConsentItemId": "1d5920c7-c5d1-4c08-93cc-4238457d7a1f",
       "required": true,
-      "type": "info",
+      "type": "marketing",
       "translations": [
         {
           "language": "EN",

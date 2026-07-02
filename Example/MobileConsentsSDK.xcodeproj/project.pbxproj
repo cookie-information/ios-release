@@ -25,7 +25,6 @@
 		935E138528F955EB00BAF8E3 /* SavedItemTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 935E136F28F955EB00BAF8E3 /* SavedItemTableViewCell.swift */; };
 		935E138628F955EB00BAF8E3 /* SavedDataViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 935E137028F955EB00BAF8E3 /* SavedDataViewController.swift */; };
 		935E138A28F9564300BAF8E3 /* MobileConsentsSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 935E138928F9564300BAF8E3 /* MobileConsentsSDK */; };
-		9377B05329BA020200742C64 /* MobileConsentsSolutionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 935E136928F955EB00BAF8E3 /* MobileConsentsSolutionViewModel.swift */; };
 		9377B05629BA0A2500742C64 /* CustomPopup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9377B05429BA0A2200742C64 /* CustomPopup.swift */; };
 		93BE518F296EB1E5000DA679 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 93BE518E296EB1E5000DA679 /* AppDelegate.m */; };
 		93BE5192296EB1E5000DA679 /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 93BE5191296EB1E5000DA679 /* SceneDelegate.m */; };
@@ -432,7 +431,6 @@
 				93BE518F296EB1E5000DA679 /* AppDelegate.m in Sources */,
 				93BE51A0296EB1E6000DA679 /* main.m in Sources */,
 				93BE5192296EB1E5000DA679 /* SceneDelegate.m in Sources */,
-				9377B05329BA020200742C64 /* MobileConsentsSolutionViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -789,6 +787,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.cookieinformation.ObjC-example";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -818,6 +817,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.cookieinformation.ObjC-example";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -847,6 +847,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.cookieinformation.ObjC-example";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = ReleaseCookieInformation;
@@ -857,7 +858,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = URYNPG7RQE;
-				INFOPLIST_FILE = MobileConsentsTests/Info.plist;
+				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -877,7 +878,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = URYNPG7RQE;
-				INFOPLIST_FILE = MobileConsentsTests/Info.plist;
+				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
