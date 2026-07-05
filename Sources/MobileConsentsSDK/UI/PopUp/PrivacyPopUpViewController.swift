@@ -65,6 +65,7 @@ final class PrivacyPopUpViewController: UIViewController, PrivacyPopupProtocol {
         btn.addTarget(self, action: #selector(openPrivacyPolicy), for: .touchUpInside)
         btn.titleLabel?.font = UIFontMetrics(forTextStyle: .body).scaledFont(for: fontSet.bold)
         btn.titleLabel?.adjustsFontForContentSizeCategory = true
+        btn.contentHorizontalAlignment = .leading
         return btn
     }()
     
@@ -173,15 +174,15 @@ final class PrivacyPopUpViewController: UIViewController, PrivacyPopupProtocol {
             scrollContainer.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
             titleView.topAnchor.constraint(equalTo: scrollContainer.topAnchor),
-            titleView.leadingAnchor.constraint(equalTo: scrollContainer.layoutMarginsGuide.leadingAnchor),
-            titleView.trailingAnchor.constraint(equalTo: scrollContainer.layoutMarginsGuide.trailingAnchor),
+            titleView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
+            titleView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
             
             privacyDescription.topAnchor.constraint(equalTo: titleView.bottomAnchor, constant: 15),
             privacyDescription.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
             privacyDescription.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
             
             readMoreButton.topAnchor.constraint(equalTo: privacyDescription.bottomAnchor, constant: 15),
-            readMoreButton.leadingAnchor.constraint(equalTo: scrollContainer.layoutMarginsGuide.leadingAnchor),
+            readMoreButton.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
             readMoreButton.heightAnchor.constraint(equalToConstant: readMoreButton.titleLabel?.font.pointSize ?? 14),
             
             tableView.topAnchor.constraint(equalTo: readMoreButton.bottomAnchor, constant: 10),
@@ -192,7 +193,7 @@ final class PrivacyPopUpViewController: UIViewController, PrivacyPopupProtocol {
             activityIndicator.centerXAnchor.constraint(equalTo: scrollContainer.centerXAnchor),
             activityIndicator.centerYAnchor.constraint(equalTo: scrollContainer.centerYAnchor),
             
-            poweredByLabel.trailingAnchor.constraint(equalTo: scrollContainer.layoutMarginsGuide.trailingAnchor, constant: -8),
+            poweredByLabel.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor, constant: -8),
             poweredByLabel.bottomAnchor.constraint(equalTo: scrollContainer.bottomAnchor, constant: -8),
             
         ])
