@@ -9,7 +9,8 @@ enum NetworkResponseError: LocalizedError {
     case noProperResponse
     case notFound
     case unauthorized
-    
+    case invalidClientCredentials(String?)
+
     var errorDescription: String? {
         switch self {
         case .badRequest: return "Bad request"
@@ -20,6 +21,9 @@ enum NetworkResponseError: LocalizedError {
         case .noProperResponse: return "No proper response."
         case .notFound: return "Not found"
         case .unauthorized: return "Unauthorized"
+        case .invalidClientCredentials(let serverMessage):
+            let details = serverMessage.map { " (\($0))" } ?? ""
+            return "Authorization failed — check that the clientID and clientSecret configured in MobileConsentsSDK are correct\(details)."
         }
     }
 }
@@ -31,7 +35,7 @@ enum NetworkResult<T> {
 
 final class NetworkManager {
     static let environment: Environment = .production
-    private lazy var provider = { Provider<APIService>(enableLogger: enableNetworkLogger) }()
+    private lazy var provider = { Provider<APIService>(enableLogger: enableNetworkLogger, session: urlSession) }()
     private let jsonDecoder: JSONDecoder
     private let localStorageManager: LocalStorageManagerProtocol
     private let platformInformationGenerator: PlatformInformationGeneratorProtocol
@@ -40,6 +44,7 @@ final class NetworkManager {
     private var token: AuthResponse?
     private let solutionID: String
     private let enableNetworkLogger: Bool
+    private let urlSession: URLSession
     
     init(
         jsonDecoder: JSONDecoder,
@@ -48,7 +53,8 @@ final class NetworkManager {
         clientID: String,
         clientSecret: String,
         solutionID: String,
-        enableNetworkLogger: Bool = false
+        enableNetworkLogger: Bool = false,
+        urlSession: URLSession = .shared
     ) {
         self.jsonDecoder = jsonDecoder
         self.localStorageManager = localStorageManager
@@ -57,6 +63,7 @@ final class NetworkManager {
         self.clientSecret = clientSecret
         self.solutionID = solutionID
         self.enableNetworkLogger = enableNetworkLogger
+        self.urlSession = urlSession
     }
     
     func getConsentSolution(completion: @escaping (Result<ConsentSolution, Error>) -> Void) {
@@ -87,39 +94,60 @@ final class NetworkManager {
     func authorize(_ completion: @escaping (Result<AuthResponse, Error>) -> Void) {
         provider.request(.authorize(clientID: clientID,
                                     clientSecret: clientSecret)) { data, response, error in
+            if let error = error {
+                self.token = nil
+                completion(.failure(error))
+                return
+            }
+
             let decoder = JSONDecoder()
             decoder.keyDecodingStrategy = .convertFromSnakeCase
             guard let data = data else {
-                completion(.failure(error ?? NetworkResponseError.noData))
+                self.token = nil
+                completion(.failure(NetworkResponseError.noData))
                 return
             }
-          
-            do {
-                let token = try decoder.decode(AuthResponse.self, from: data)
-                self.token = token
-                completion(.success(token))
-            } catch {
-                completion(.failure(error))
+
+            let token = try? decoder.decode(AuthResponse.self, from: data)
+
+            if let httpResponse = response as? HTTPURLResponse, case .failure = httpResponse.result {
+                self.token = nil
+                switch httpResponse.statusCode {
+                case 400, 401, 403:
+                    completion(.failure(NetworkResponseError.invalidClientCredentials(token?.errorDescription ?? token?.error)))
+                default:
+                    completion(.failure(NetworkResponseError.failed))
+                }
+                return
+            }
+
+            guard let token = token, token.isValid else {
+                self.token = nil
+                completion(.failure(NetworkResponseError.invalidClientCredentials(token?.errorDescription ?? token?.error)))
+                return
+            }
+
+            self.token = token
+            completion(.success(token))
+        }
+    }
+
+    func postConsent(_ consent: Consent, isRetryAfterUnauthorized: Bool = false, completion: @escaping (Error?) -> Void) {
+        if let token = token, token.isValid {
+            postConsent(consent: consent, allowUnauthorizedRetry: !isRetryAfterUnauthorized, completion: completion)
+        } else {
+            authorize { response in
+                switch response {
+                case .success:
+                    self.postConsent(consent: consent, allowUnauthorizedRetry: !isRetryAfterUnauthorized, completion: completion)
+                case .failure(let error):
+                    completion(error)
+                }
             }
         }
     }
     
-    func postConsent(_ consent: Consent, completion: @escaping (Error?) -> Void) {
-      if let token = token, token.expiresIn > Date() {
-        postConsent(consent: consent, completion: completion)
-      } else {
-        authorize { response in
-          switch response {
-          case .success:
-            self.postConsent(consent, completion: completion)
-          case .failure(let error):
-            completion(error)
-          }
-        }
-      }
-    }
-    
-  private func postConsent(consent: Consent, completion: @escaping (Error?) -> Void) {
+  private func postConsent(consent: Consent, allowUnauthorizedRetry: Bool, completion: @escaping (Error?) -> Void) {
     let platformInformation = platformInformationGenerator.generatePlatformInformation()
     let consentPayload = consent.JSONRepresentation()
     let userId = localStorageManager.userId
@@ -137,6 +165,13 @@ final class NetworkManager {
             switch response.result {
             case .success: completion(nil)
             case .failure(let error):
+                if response.statusCode == 401 {
+                    self.token = nil
+                    if allowUnauthorizedRetry {
+                        self.postConsent(consent, isRetryAfterUnauthorized: true, completion: completion)
+                        return
+                    }
+                }
                 switch error {
                 case .badRequest:
                     guard let data = data, let apiError = try? JSONDecoder().decode(APIError.self, from: data) else { return completion(error) }

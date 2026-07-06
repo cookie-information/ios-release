@@ -24,16 +24,18 @@ private enum NetworkProviderError: LocalizedError {
 
 final class Provider<EndPoint: EndpointType>: NetworkProvider {
     
-    internal init(task: URLSessionTask? = nil, enableLogger: Bool) {
+    internal init(task: URLSessionTask? = nil, enableLogger: Bool, session: URLSession = .shared) {
         self.task = task
         self.enableLogger = enableLogger
+        self.session = session
     }
     
     private var task: URLSessionTask?
     private let enableLogger: Bool
+    private let session: URLSession
     
     func request(_ route: EndPoint, completion: @escaping NetworkProviderCompletion) {
-        let session = URLSession.shared
+        let session = session
         do {
             let request = try self.buildRequest(from: route)
             if enableLogger {
