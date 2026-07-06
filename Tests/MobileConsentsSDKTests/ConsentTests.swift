@@ -1,10 +1,10 @@
-//@testable import MobileConsentsSDK
+@testable import MobileConsentsSDK
 import XCTest
 
 final class ConsentTests: XCTestCase {
     func testJSONRepresentation() throws {
         let purpose = ProcessingPurpose(consentItemId: "CONSENT_ITEM_ID", consentGiven: true, language: "PL")
-        var consent = Consent(consentSolutionId: "ID", consentSolutionVersionId: "VERSION_ID", customData: ["FIRST_DATA_KEY": "FIRST_DATA"])
+        var consent = Consent(consentSolutionId: "ID", consentSolutionVersionId: "VERSION_ID", customData: ["FIRST_DATA_KEY": "FIRST_DATA"], userConsents: [])
         consent.addProcessingPurpose(purpose)
         let json = consent.JSONRepresentation()
         
@@ -13,7 +13,7 @@ final class ConsentTests: XCTestCase {
 
     func testAddPurpose() throws {
         let purpose = ProcessingPurpose(consentItemId: "CONSENT_ITEM_ID", consentGiven: true, language: "PL")
-        var consent = Consent(consentSolutionId: "ID", consentSolutionVersionId: "VERSION_ID", customData: [:])
+        var consent = Consent(consentSolutionId: "ID", consentSolutionVersionId: "VERSION_ID", customData: [:], userConsents: [])
         consent.addProcessingPurpose(purpose)
         
         XCTAssertEqual(purpose.consentItemId, consent.processingPurposes.first?.consentItemId, "Add purpose to Consent - consentItemIds should be equal")
@@ -21,7 +21,7 @@ final class ConsentTests: XCTestCase {
     
     func testParsedCustomData() throws {
         let customData = ["FIRST_DATA_KEY": "FIRST_DATA"]
-        let consent = Consent(consentSolutionId: "ID", consentSolutionVersionId: "VERSION_ID", customData: customData )
+        let consent = Consent(consentSolutionId: "ID", consentSolutionVersionId: "VERSION_ID", customData: customData, userConsents: [])
         let parsedCustomData = consent.parsedCustomData()
         
         XCTAssertEqual(parsedCustomData.first?["fieldName"], customData.first?.key, "")

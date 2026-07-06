@@ -21,6 +21,18 @@ let package = Package(
             resources: [.copy("Resources/PrivacyInfo.xcprivacy")]),
         .testTarget(
             name: "MobileConsentsSDKTests",
-            dependencies: ["MobileConsentsSDK"])
+            dependencies: ["MobileConsentsSDK"],
+            exclude: [
+                "Info.plist",
+                "ConsentSolutionManagerTests.swift",
+                "DecodingTests.swift",
+                "LocalStorageManagerTests.swift",
+                "UI/PopUpConsentViewModelTests.swift",
+                "UI/PrivacyPopUpViewModelTests.swift",
+                "Mock/MockedUserDefaults.swift",
+            ],
+            resources: [
+                .process("Resources/ConsentSolution.json"),
+            ])
     ]
 )

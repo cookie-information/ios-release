@@ -16,13 +16,16 @@ struct AuthResponse: Codable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let expires = (try? container.decode(Double.self, forKey: .expiresIn)) ?? -1
-        
+
         expiresIn = Date(timeIntervalSinceNow: expires)
         accessToken = try? container.decode(String?.self, forKey: .accessToken)
         errorDescription = try? container.decode(String?.self, forKey: .errorDescription)
         error = try? container.decode(String.self, forKey: .error)
-        
-    }
-    
 
+    }
+
+    var isValid: Bool {
+        guard error == nil, let accessToken = accessToken, !accessToken.isEmpty else { return false }
+        return expiresIn > Date()
+    }
 }
