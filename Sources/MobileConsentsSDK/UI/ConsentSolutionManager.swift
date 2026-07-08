@@ -134,11 +134,16 @@ final class ConsentSolutionManager: ConsentSolutionManagerProtocol {
     }
     
     func setLocalizationOverride(_ labels: NSDictionary) {
-        
+
     }
-    
+
     private func postConsent(selectedConsentItemIds: Set<String>, completion: @escaping (Error?) -> Void) {
-        guard let consentSolution = consentSolution else { return }
+        // Must still deliver a result if the consent solution is not loaded yet,
+        // otherwise the completion never fires and the pop-up spinner hangs forever.
+        guard let consentSolution = consentSolution else {
+            completion(ConsentSolutionManagerError.consentSolutionNotLoaded)
+            return
+        }
         
         let userConsents = consentSolution.consentItems.filter {$0.type != .privacyPolicy}.map {UserConsent(consentItem: $0, isSelected: selectedConsentItemIds.contains($0.id) || $0.required)}
         
@@ -154,5 +159,16 @@ final class ConsentSolutionManager: ConsentSolutionManagerProtocol {
     
     private func postConsentItemSelectionDidChangeNotification() {
         notificationCenter.post(Notification(name: Self.consentItemSelectionDidChange))
+    }
+}
+
+enum ConsentSolutionManagerError: LocalizedError {
+    case consentSolutionNotLoaded
+
+    var errorDescription: String? {
+        switch self {
+        case .consentSolutionNotLoaded:
+            return "Cannot post consent because the consent solution has not been loaded yet."
+        }
     }
 }

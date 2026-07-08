@@ -183,6 +183,19 @@ final class ConsentSolutionManagerTests: XCTestCase {
         XCTAssertNil(processingPurposes.first { $0.consentItemId == "2" })
     }
 
+    func test_postingConsentBeforeConsentSolutionIsLoaded_completesWithError() {
+        // No consent solution has been loaded, so the completion must still fire
+        // (with an error) instead of hanging the pop-up spinner forever.
+        let receivedError = Ref<Error?>(nil)
+
+        sut.acceptSelectedConsentItems { error in
+            receivedError.value = error
+        }
+
+        XCTAssertTrue(receivedError.value is ConsentSolutionManagerError)
+        XCTAssertNil(mobileConsents.postedConsents, "Nothing should be posted when there is no consent solution")
+    }
+
     private func loadConsentSolution(_ consentSolution: ConsentSolution) {
         mobileConsents.fetchConsentSolutionResult = .success(consentSolution)
 
