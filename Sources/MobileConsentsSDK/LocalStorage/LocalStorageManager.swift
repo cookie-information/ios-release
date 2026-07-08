@@ -3,7 +3,6 @@ import UIKit
 protocol LocalStorageManagerProtocol {
     var userId: String { get }
     var consents: [String: UserConsent] { get }
-    func removeUserId()
     func addConsent(consentItemId: String, consent: UserConsent)
     func addConsentsArray(_ consentsArray: [UserConsent], versionId: String)
     func clearAll()
@@ -46,10 +45,6 @@ struct LocalStorageManager: LocalStorageManagerProtocol {
         let userId = UUID().uuidString
         userDefaults.set(userId, forKey: userIdKey)
         return userId
-    }
-    
-    func removeUserId() {
-        userDefaults.removeObject(forKey: userId)
     }
     
     var consents: [String: UserConsent] {
