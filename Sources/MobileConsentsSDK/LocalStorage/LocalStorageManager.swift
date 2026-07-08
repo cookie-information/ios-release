@@ -3,7 +3,6 @@ import UIKit
 protocol LocalStorageManagerProtocol {
     var userId: String { get }
     var consents: [String: UserConsent] { get }
-    func addConsent(consentItemId: String, consent: UserConsent)
     func addConsentsArray(_ consentsArray: [UserConsent], versionId: String)
     func clearAll()
 }
@@ -65,13 +64,6 @@ struct LocalStorageManager: LocalStorageManagerProtocol {
                 dict[tuple.0] = tuple.1
                 return dict
             })
-        
-    }
-    
-    func addConsent(consentItemId: String, consent: UserConsent) {
-        var consents = self.consents
-        consents[consentItemId] = consent
-        userDefaults.set(consents, forKey: consentsKey)
         
     }
     
