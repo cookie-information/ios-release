@@ -108,7 +108,7 @@ public class PrivacyPolicyDetail: UIViewController {
         }
         NSLayoutConstraint.activate([
             
-            navigationBar.topAnchor.constraint(equalTo: view.topAnchor),
+            navigationBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 12),
             navigationBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             navigationBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             
