@@ -11,7 +11,7 @@ class PrivacyPopUpViewModelTests: XCTestCase {
 
     private let sampleError = NSError(domain: "Sample", code: 1234)
 
-    override func setUpWithError() throws {
+    override func setUp() async throws {
         consentSolutionManager = ConsentSolutionManagerMock()
         router = RouterMock()
         sut = PrivacyPopUpViewModel(

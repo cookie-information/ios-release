@@ -7,7 +7,7 @@ class PopUpConsentViewModelTests: XCTestCase {
     private var notificationCenter: NotificationCenter!
     private var consentItemProvider: ConsentItemProviderMock!
 
-    override func setUpWithError() throws {
+    override func setUp() async throws {
         notificationCenter = NotificationCenter()
         consentItemProvider = ConsentItemProviderMock()
         sut = PopUpConsentViewModel(

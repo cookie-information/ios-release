@@ -1,6 +1,7 @@
 import Foundation
 
 final class MockURLProtocol: URLProtocol {
+    // Test-only mock; single test drives it sequentially
     static var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
     static var oauthRequestCount = 0
     static var consentRequestCount = 0

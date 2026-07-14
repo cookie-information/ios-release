@@ -6,10 +6,14 @@ final class ConsentSolutionManagerTests: XCTestCase {
     private var notificationCenter: NotificationCenter!
     private var mobileConsents: MobileConsentsProtocolMock!
 
-    private var notificationCount: Int!
-    private var observationToken: Any!
+    // Incremented from the notification observer; posts always happen on the main thread.
+    private var notificationCount = 0
 
-    override func setUp() {
+    @objc private func consentItemSelectionDidChange() {
+        notificationCount += 1
+    }
+
+    override func setUp() async throws {
         notificationCenter = NotificationCenter()
         mobileConsents = MobileConsentsProtocolMock()
 
@@ -22,18 +26,17 @@ final class ConsentSolutionManagerTests: XCTestCase {
 
         notificationCount = 0
 
-        observationToken = notificationCenter.addObserver(
-            forName: ConsentSolutionManager.consentItemSelectionDidChange,
-            object: nil,
-            queue: nil) { [weak self] _ in
-            self?.notificationCount += 1
-        }
+        notificationCenter.addObserver(
+            self,
+            selector: #selector(consentItemSelectionDidChange),
+            name: ConsentSolutionManager.consentItemSelectionDidChange,
+            object: nil
+        )
     }
 
-    override func tearDown() {
+    override func tearDown() async throws {
         sut = nil
-        notificationCount = nil
-        notificationCenter.removeObserver(observationToken as Any)
+        notificationCenter.removeObserver(self)
     }
 
     func test_areAllRequiredConsentItemsSelectedIsFalse_whenConsentSolutionIsNotLoaded() {
