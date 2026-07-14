@@ -68,8 +68,12 @@ struct LocalStorageManager: LocalStorageManagerProtocol {
     }
     
     func addConsentsArray(_ consentsArray: [UserConsent], versionId: String) {
-        var consents = [String: Any]()
         userDefaults.set(versionId, forKey: consentSolutionVersionIdKey)
+        // An empty post (e.g. a solution containing only privacy-policy items)
+        // must not wipe previously stored consents; before 2.0 the write only
+        // ever happened inside the per-item loop, so an empty array was a no-op.
+        guard !consentsArray.isEmpty else { return }
+        var consents = [String: Any]()
         consentsArray.forEach { consent in
             do {
                 let id = consent.consentItem.id

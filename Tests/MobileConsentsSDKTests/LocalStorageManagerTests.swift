@@ -61,6 +61,18 @@ final class LocalStorageManagerTests: XCTestCase {
         XCTAssertEqual(localStorageManager.versionId, "VERSION_ID")
     }
 
+    func testAddEmptyConsentsArrayKeepsStoredConsentsAndUpdatesVersionId() throws {
+        localStorageManager.addConsentsArray(
+            [userConsent(consentItemId: "CONSENT_ID_1", isSelected: true)],
+            versionId: "VERSION_ID"
+        )
+
+        localStorageManager.addConsentsArray([], versionId: "NEW_VERSION_ID")
+
+        XCTAssertEqual(localStorageManager.consents.count, 1, "An empty post must not wipe stored consents")
+        XCTAssertEqual(localStorageManager.versionId, "NEW_VERSION_ID")
+    }
+
     func testClearAllRemovesConsents() throws {
         localStorageManager.addConsentsArray(
             [userConsent(consentItemId: "CONSENT_ID_1", isSelected: true)],
