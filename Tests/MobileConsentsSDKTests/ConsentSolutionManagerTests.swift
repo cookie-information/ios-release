@@ -85,9 +85,9 @@ final class ConsentSolutionManagerTests: XCTestCase {
 
     func test_consentItemsSavedAsGivenAreAlreadyMarkedAsSelected_afterLoadingContentSolution() {
         mobileConsents.savedConsents = [
-            savedConsent(consentItemId: "0", consentGiven: true),
-            savedConsent(consentItemId: "1", consentGiven: false),
-            savedConsent(consentItemId: "2", consentGiven: true)
+            userConsent(consentItemId: "0", isSelected: true),
+            userConsent(consentItemId: "1", isSelected: false),
+            userConsent(consentItemId: "2", isSelected: true)
         ]
 
         loadConsentSolution(consentSolution(consentItemConfigs: [(true, .functional), (true, .functional), (false, .functional)]))
@@ -205,17 +205,6 @@ final class ConsentSolutionManagerTests: XCTestCase {
         sut.loadConsentSolutionIfNeeded { _ in }
     }
 
-    private func savedConsent(consentItemId: String, consentGiven: Bool) -> UserConsent {
-        UserConsent(
-            consentItem: ConsentItem(
-                id: consentItemId,
-                required: false,
-                type: .functional,
-                translations: Translated(translations: [], primaryLanguage: nil)
-            ),
-            isSelected: consentGiven
-        )
-    }
 }
 
 private final class MobileConsentsProtocolMock: MobileConsentsProtocol {
@@ -245,42 +234,3 @@ struct DummyAsyncDispatcher: AsyncDispatcher {
     }
 }
 
-func consentSolution(consentItemConfigs: [(Bool, ConsentItemType)]) -> ConsentSolution {
-    let consentItems = consentItemConfigs.enumerated().map { index, config in
-        ConsentItem(
-            id: "\(index)",
-            required: config.0,
-            type: config.1,
-            translations: Translated(
-                translations: [
-                    ConsentTranslation(language: "EN", shortText: "Consent short text", longText: "Consent long text")
-                ],
-                primaryLanguage: nil
-            )
-        )
-    }
-
-    return ConsentSolution(
-        id: "1",
-        versionId: "1",
-        templateTexts: TemplateTexts(
-            readMoreButton: translated("Read more button title"),
-            rejectAllButton: translated("Reject all button title"),
-            acceptAllButton: translated("Accept all button title"),
-            acceptSelectedButton: translated("Accept selected button title"),
-            savePreferencesButton: translated("Save preferences button title"),
-            privacyCenterTitle: translated("Privacy center title"),
-            privacyPreferencesTabLabel: translated("Privacy preferences tab"),
-            poweredByCoiLabel: translated("Powered by Cookie Information"),
-            consentPreferencesLabel: translated("Consent preferences label"),
-            readMoreScreenHeader: nil,
-            optionalTableSectionHeader: nil,
-            requiredTableSectionHeader: nil
-        ),
-        consentItems: consentItems
-    )
-}
-
-private func translated(_ text: String) -> Translated<TemplateTranslation> {
-    Translated(translations: [TemplateTranslation(language: "EN", text: text)], primaryLanguage: nil)
-}

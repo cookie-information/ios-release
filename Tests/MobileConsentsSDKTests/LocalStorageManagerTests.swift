@@ -83,16 +83,4 @@ final class LocalStorageManagerTests: XCTestCase {
 
         XCTAssertTrue(localStorageManager.consents.isEmpty)
     }
-
-    private func userConsent(consentItemId: String, isSelected: Bool) -> UserConsent {
-        UserConsent(
-            consentItem: ConsentItem(
-                id: consentItemId,
-                required: false,
-                type: .functional,
-                translations: Translated(translations: [], primaryLanguage: nil)
-            ),
-            isSelected: isSelected
-        )
-    }
 }

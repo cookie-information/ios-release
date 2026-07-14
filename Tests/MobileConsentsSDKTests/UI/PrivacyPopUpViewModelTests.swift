@@ -182,14 +182,13 @@ class PrivacyPopUpViewModelTests: XCTestCase {
     }
 }
 
-final class ConsentSolutionManagerMock: ConsentSolutionManagerProtocol {
+// Inherits the ConsentItemProvider stubbing from the shared ConsentItemProviderMock.
+final class ConsentSolutionManagerMock: ConsentItemProviderMock, ConsentSolutionManagerProtocol {
     var settings: [ConsentItem] { [] }
     var localizationOverride: [Locale: LabelText] = [:]
 
     var areAllRequiredConsentItemsSelected = false
     var hasRequiredConsentItems = true
-    var consentItemSelections = [String: Bool]()
-    var requiredConsentItemIds = Set<String>()
 
     var loadConsentSolutionIfNeededCompletion: ((Result<ConsentSolution, Error>) -> Void)?
 
@@ -209,18 +208,6 @@ final class ConsentSolutionManagerMock: ConsentSolutionManagerProtocol {
 
     func acceptSelectedConsentItems(completion: @escaping (Error?) -> Void) {
         self.completion = completion
-    }
-
-    func isConsentItemSelected(id: String) -> Bool {
-        consentItemSelections[id, default: false]
-    }
-
-    func isConsentItemRequired(id: String) -> Bool {
-        requiredConsentItemIds.contains(id)
-    }
-
-    func markConsentItem(id: String, asSelected selected: Bool) {
-        consentItemSelections[id] = selected
     }
 }
 

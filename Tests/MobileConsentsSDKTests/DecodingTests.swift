@@ -33,11 +33,10 @@ final class DecodingTests: XCTestCase {
 
 private let primaryLanguage = "PL"
 
+// Convenience over the shared builder: everything decoded in this test file
+// carries the "PL" primary language injected through the decoder's userInfo.
 private func translated(_ text: String) -> Translated<TemplateTranslation> {
-    Translated(
-        translations: [TemplateTranslation(language: "EN", text: text)],
-        primaryLanguage: primaryLanguage
-    )
+    translated(text, primaryLanguage: primaryLanguage)
 }
 
 private let expectedConsentItems = [

@@ -58,20 +58,3 @@ class PopUpConsentViewModelTests: XCTestCase {
         XCTAssertTrue(onUpdateCalled)
     }
 }
-
-final class ConsentItemProviderMock: ConsentItemProvider {
-    var consentItemSelections = [String: Bool]()
-    var requiredConsentItemIds = Set<String>()
-
-    func isConsentItemSelected(id: String) -> Bool {
-        consentItemSelections[id, default: false]
-    }
-
-    func isConsentItemRequired(id: String) -> Bool {
-        requiredConsentItemIds.contains(id)
-    }
-
-    func markConsentItem(id: String, asSelected selected: Bool) {
-        consentItemSelections[id] = selected
-    }
-}
