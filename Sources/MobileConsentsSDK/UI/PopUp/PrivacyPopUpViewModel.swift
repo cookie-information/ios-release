@@ -112,6 +112,15 @@ public final class PrivacyPopUpViewModel: NSObject, PrivacyPopUpViewModelProtoco
     
     private func handlePostingConsent(buttonType: PopUpButtonViewModel.ButtonType, error: Error?) {
         onLoadingChange?(false)
+
+        // A tap that raced the initial fetch (possible with custom pop-ups that
+        // keep buttons enabled while loading) must not tear the pop-up down —
+        // closing here would discard the user's selection without saving any
+        // consent. Keep the pop-up open so the tap can simply be repeated.
+        if let error = error as? ConsentSolutionManagerError, case .consentSolutionNotLoaded = error {
+            return
+        }
+
         router?.closeAll(error: error)
     }
 }

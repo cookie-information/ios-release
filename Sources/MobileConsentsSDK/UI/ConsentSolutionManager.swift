@@ -140,8 +140,12 @@ final class ConsentSolutionManager: ConsentSolutionManagerProtocol {
     private func postConsent(selectedConsentItemIds: Set<String>, completion: @escaping (Error?) -> Void) {
         // Must still deliver a result if the consent solution is not loaded yet,
         // otherwise the completion never fires and the pop-up spinner hangs forever.
+        // Delivered through the dispatcher so the completion always arrives on the
+        // main queue, consistent with every other completion in this class.
         guard let consentSolution = consentSolution else {
-            completion(ConsentSolutionManagerError.consentSolutionNotLoaded)
+            asyncDispatcher.async {
+                completion(ConsentSolutionManagerError.consentSolutionNotLoaded)
+            }
             return
         }
         

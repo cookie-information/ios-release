@@ -169,6 +169,17 @@ class PrivacyPopUpViewModelTests: XCTestCase {
         XCTAssertTrue(router.closeAllCalled)
         XCTAssertNotNil(router.closeAllError)
     }
+
+    func test_tappingAcceptBeforeConsentSolutionIsLoaded_keepsPopUpOpenAndHidesLoader() {
+        // A tap racing the initial fetch must stay retryable: the pop-up must not
+        // be dismissed (that would drop the user's consent) and the loader must stop.
+        sut.buttonTapped(type: .acceptAll)
+
+        consentSolutionManager.completion?(ConsentSolutionManagerError.consentSolutionNotLoaded)
+
+        XCTAssertFalse(router.closeAllCalled)
+        XCTAssertFalse(try XCTUnwrap(isLoading))
+    }
 }
 
 final class ConsentSolutionManagerMock: ConsentSolutionManagerProtocol {
