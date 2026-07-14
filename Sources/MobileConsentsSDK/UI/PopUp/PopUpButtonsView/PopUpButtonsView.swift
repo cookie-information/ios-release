@@ -32,7 +32,7 @@ final class PopUpButtonsView: UIView {
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
         
-        guard traitCollection.userInterfaceStyle != previousTraitCollection?.userInterfaceStyle else {
+        guard traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) else {
             return
         }
 
