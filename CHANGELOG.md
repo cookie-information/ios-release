@@ -21,4 +21,5 @@
 - Repaired the unit test suite and both example apps, which no longer compiled against the current SDK API.
 
 ### Notes
+- Upgrading from 1.5.x requires no code changes. The public API is unchanged, just raise your deployment target to iOS 15 and update the dependency.
 - If your app needs to support iOS versions older than 15.0, stay on version 1.5.8.

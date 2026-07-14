@@ -5,7 +5,7 @@
 - iOS 15.0 or newer
 - Swift 5.10 or newer (Xcode 15.3+)
 
-> **Note:** Version 2.0.0 raises the minimum supported iOS version from 11.0 to 15.0. If your app needs to support older iOS versions, stay on version 1.5.8. See [CHANGELOG.md](CHANGELOG.md) for release history.
+> **Note:** Version 2.0.0 raises the minimum supported iOS version to 15.0. If your app needs to support older iOS versions, stay on version 1.5.8.
 
 ## Installation
 ### Swift Package Manager
