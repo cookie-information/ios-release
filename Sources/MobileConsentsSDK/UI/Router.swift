@@ -6,12 +6,13 @@ protocol RouterProtocol {
 
 final class Router: RouterProtocol {
     weak var rootViewController: UIViewController?
-    
+
     private let consentSolutionManager: ConsentSolutionManagerProtocol
     private let accentColor: UIColor
     private var completion: (([UserConsent])->())?
     private var errorHandler: ((Error)->())?
     private let fontSet: FontSet
+    private var isClosed = false
     
     init(consentSolutionManager: ConsentSolutionManagerProtocol, accentColor: UIColor? = nil, fontSet: FontSet) {
         self.consentSolutionManager = consentSolutionManager
@@ -37,8 +38,14 @@ final class Router: RouterProtocol {
     }
     
     func closeAll(error: Error? = nil) {
+        // A tap can still slip in while the dismiss animation is running; the
+        // session is already closing, so the client's completion/errorHandler
+        // must not fire a second time. Each presentation gets a fresh Router.
+        guard !isClosed else { return }
+        isClosed = true
+
         defer { rootViewController?.dismiss(animated: true) }
-        
+
         if let error = error {
             self.errorHandler?(error)
             return
