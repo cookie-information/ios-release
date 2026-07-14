@@ -24,35 +24,28 @@ final class ConsentSolutionManager: ConsentSolutionManagerProtocol {
     static let consentItemSelectionDidChange = Notification.Name(rawValue: "com.cookieinformation.consentItemSelectionDidChange")
     
     var areAllRequiredConsentItemsSelected: Bool {
-        consentSolution?
-            .consentItems
-            .filter { $0.required && $0.type != .privacyPolicy}
+        guard consentSolution != nil else { return false }
+        return settings
+            .filter(\.required)
             .map(\.id)
             .allSatisfy(selectedConsentItemIds.contains)
-            ??
-            false
     }
-    
+
     var hasRequiredConsentItems: Bool {
-        !(consentSolution?
-            .consentItems
-            .filter { $0.required && $0.type != .privacyPolicy }
-            .isEmpty
-            ??
-            true)
+        settings.contains(where: \.required)
     }
-    
+
+    /// All consent items the user can actually toggle. Privacy policy entries
+    /// are informational only — they are never selectable and never posted.
     public var settings: [ConsentItem] {
-        consentSolution?.consentItems.filter { $0.type != .privacyPolicy} ?? []
+        consentSolution?.consentItems.filter { $0.type != .privacyPolicy } ?? []
     }
-    
+
     private var allSettingsItemIds: [String] {
-        consentSolution?.consentItems
-            .filter {$0.type != .privacyPolicy }
-            .map(\.id) ?? []
+        settings.map(\.id)
     }
-    
-    
+
+
     private let consentSolutionId: String
     private let mobileConsents: MobileConsentsProtocol
     private let notificationCenter: NotificationCenter
@@ -149,8 +142,8 @@ final class ConsentSolutionManager: ConsentSolutionManagerProtocol {
             return
         }
         
-        let userConsents = consentSolution.consentItems.filter {$0.type != .privacyPolicy}.map {UserConsent(consentItem: $0, isSelected: selectedConsentItemIds.contains($0.id) || $0.required)}
-        
+        let userConsents = settings.map { UserConsent(consentItem: $0, isSelected: selectedConsentItemIds.contains($0.id) || $0.required) }
+
         let consent = Consent(consentSolutionId: consentSolution.id, consentSolutionVersionId: consentSolution.versionId, userConsents: userConsents)
 
         
