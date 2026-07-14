@@ -38,9 +38,8 @@ final class Router: RouterProtocol {
     }
     
     func closeAll(error: Error? = nil) {
-        // A tap can still slip in while the dismiss animation is running; the
-        // session is already closing, so the client's completion/errorHandler
-        // must not fire a second time. Each presentation gets a fresh Router.
+        // closeAll ends the pop-up session, so it must run at most once: a late
+        // tap must not fire the client callbacks or dismiss the host UI again.
         guard !isClosed else { return }
         isClosed = true
 
