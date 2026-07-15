@@ -105,7 +105,6 @@ final class PrivacyPopUpViewController: UIViewController, PrivacyPopupProtocol {
     }()
     
     private var privacyPolicyLongtext = ""
-    private lazy var buttonsView = { PopUpButtonsView(accentColor: accentColor) }()
     private let activityIndicator = UIActivityIndicatorView(style: .large)
     private let accentColor: UIColor
     private let viewModel: PrivacyPopUpViewModelProtocol
