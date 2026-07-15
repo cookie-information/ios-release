@@ -108,11 +108,15 @@ The `showPrivacyPopUpIfNeeded` method is typically used to present the popup aft
 Just like in Swift, the same methods are used to display the privacy pop-up, only with a slight variation to reflect Objective-C naming conventions. 
 
 ```Objective-C
-       [self.mobileConsents showPrivacyPopUpIfNeededOnViewController:self
-                                                         animated:YES
-                                             ignoreVersionChanges:NO
-                                                       completion:^(NSArray<UserConsent *> * _Nonnull) {
+    [self.mobileConsents showPrivacyPopUpIfNeededWithCustomViewType:nil
+                                                   onViewController:self
+                                                           animated:YES
+                                               ignoreVersionChanges:NO
+                                                         completion:^(NSArray<UserConsent *> * _Nonnull consents) {
         // Handle consents here
+    }
+                                                       errorHandler:^(NSError * _Nonnull error) {
+        // Handle the error here
     }];
 ```
 

@@ -126,10 +126,6 @@ final class ConsentSolutionManager: ConsentSolutionManagerProtocol {
         postConsent(selectedConsentItemIds: selectedConsentItemIds, completion: completion)
     }
     
-    func setLocalizationOverride(_ labels: NSDictionary) {
-
-    }
-
     private func postConsent(selectedConsentItemIds: Set<String>, completion: @escaping (Error?) -> Void) {
         // Must still deliver a result if the consent solution is not loaded yet,
         // otherwise the completion never fires and the pop-up spinner hangs forever.
