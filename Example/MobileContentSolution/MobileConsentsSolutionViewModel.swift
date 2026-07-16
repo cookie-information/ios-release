@@ -1,4 +1,5 @@
 import UIKit
+import SwiftUI
 import MobileConsentsSDK
 
 
@@ -16,9 +17,9 @@ final class MobileConsentSolutionViewModel {
     
     private var selectedItems: [ConsentItem] = []
     private var language: String?
-    private var clientId = "40dbe5a7-1c01-463a-bb08-a76970c0efa0"
-    private var clientSecret = "68cbf024407a20b8df4aecc3d9937f43c6e83169dafcb38b8d18296b515cc0d5f8bca8165d615caa4d12e236192851e9c5852a07319428562af8f920293bc1db"
-    private var solutionId = "4113ab88-4980-4429-b2d1-3454cc81197b"
+    private var clientId = "0dd4825b-8f7b-4fbc-8b41-b540ffc6d061"
+    private var clientSecret = "8af460da2cddf7080c7d2975ddcbd5178a3f9e0e55a00373daae27c1441c806a40bd0948e97be0f700ed23c4428ca56661f4b68c5c98d03a7e8de8bb26dcdd7d"
+    private var solutionId = "dbbb8fd5-d3e2-49df-8336-a1e6d68b683d"
     
     private var items: [ConsentItem] {
         return consentSolution?.consentItems ?? []
@@ -98,6 +99,26 @@ final class MobileConsentSolutionViewModel {
         }        
     }
     
+    /// Presents the standalone (pure SwiftUI) variant, which uses the SDK's low-level
+    /// API directly instead of the customViewType hook. In a SwiftUI app you would
+    /// drive it with `.fullScreenCover` instead — see StandaloneConsentView docs.
+    @available(iOS 15.0, *)
+    func showStandaloneConsent(from presenter: UIViewController) {
+        let store = ConsentStore(mobileConsents: mobileConsentsSDK)
+        let host = UIHostingController(rootView: StandaloneConsentView(store: store))
+        host.modalPresentationStyle = .fullScreen
+        host.isModalInPresentation = true
+        store.onFinished = { [weak host] consents in
+            consents.forEach { print("Consent given for:\($0.purpose): \($0.isSelected)") }
+            host?.dismiss(animated: true)
+        }
+        store.onError = { [weak host] error in
+            print("Ooops, we've encountered an error: \(error.localizedDescription)")
+            host?.dismiss(animated: true)
+        }
+        presenter.present(host, animated: true)
+    }
+
     func showPrivacyPopUpIfNeeded() {
         // Display the popup and provide a closure for handling the user constent.
         // This completion closure is the place to display
@@ -145,5 +166,14 @@ struct PrivacyPopupStyle {
     static let customController: PrivacyPopupStyle = {
         PrivacyPopupStyle(accentColor: .systemPink, fontSet: .standard, customController: CustomPopup.self)
     }()
-    
+
+    static let brandCustomUI: PrivacyPopupStyle = {
+        PrivacyPopupStyle(accentColor: ConsentColors.brandBlue, fontSet: .standard, customController: CustomConsentViewController.self)
+    }()
+
+    @available(iOS 15.0, *)
+    static var brandCustomSwiftUI: PrivacyPopupStyle {
+        PrivacyPopupStyle(accentColor: ConsentColors.brandBlue, fontSet: .standard, customController: CustomConsentSwiftUIController.self)
+    }
+
 }

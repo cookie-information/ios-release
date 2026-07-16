@@ -27,6 +27,12 @@
 		935E138A28F9564300BAF8E3 /* MobileConsentsSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 935E138928F9564300BAF8E3 /* MobileConsentsSDK */; };
 		9377B05329BA020200742C64 /* MobileConsentsSolutionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 935E136928F955EB00BAF8E3 /* MobileConsentsSolutionViewModel.swift */; };
 		9377B05629BA0A2500742C64 /* CustomPopup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9377B05429BA0A2200742C64 /* CustomPopup.swift */; };
+		CC46202026070001000000B1 /* ConsentColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC46202026070001000000A1 /* ConsentColors.swift */; };
+		CC46202026070001000000B2 /* CustomConsentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC46202026070001000000A2 /* CustomConsentViewController.swift */; };
+		CC46202026070001000000B4 /* CustomConsentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC46202026070001000000A4 /* CustomConsentView.swift */; };
+		CC46202026070001000000B5 /* CustomConsentSwiftUIController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC46202026070001000000A5 /* CustomConsentSwiftUIController.swift */; };
+		CC46202026070001000000B6 /* ConsentStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC46202026070001000000A6 /* ConsentStore.swift */; };
+		CC46202026070001000000B7 /* StandaloneConsentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC46202026070001000000A7 /* StandaloneConsentView.swift */; };
 		93BE518F296EB1E5000DA679 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 93BE518E296EB1E5000DA679 /* AppDelegate.m */; };
 		93BE5192296EB1E5000DA679 /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 93BE5191296EB1E5000DA679 /* SceneDelegate.m */; };
 		93BE5195296EB1E5000DA679 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 93BE5194296EB1E5000DA679 /* ViewController.m */; };
@@ -76,6 +82,13 @@
 		935E137028F955EB00BAF8E3 /* SavedDataViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SavedDataViewController.swift; sourceTree = "<group>"; };
 		935E138828F9563100BAF8E3 /* mobileconsentsios */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = mobileconsentsios; path = ..; sourceTree = "<group>"; };
 		9377B05429BA0A2200742C64 /* CustomPopup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomPopup.swift; sourceTree = "<group>"; };
+		CC46202026070001000000A1 /* ConsentColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsentColors.swift; sourceTree = "<group>"; };
+		CC46202026070001000000A2 /* CustomConsentViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomConsentViewController.swift; sourceTree = "<group>"; };
+		CC46202026070001000000A3 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		CC46202026070001000000A4 /* CustomConsentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomConsentView.swift; sourceTree = "<group>"; };
+		CC46202026070001000000A5 /* CustomConsentSwiftUIController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomConsentSwiftUIController.swift; sourceTree = "<group>"; };
+		CC46202026070001000000A6 /* ConsentStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsentStore.swift; sourceTree = "<group>"; };
+		CC46202026070001000000A7 /* StandaloneConsentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandaloneConsentView.swift; sourceTree = "<group>"; };
 		93BE518B296EB1E5000DA679 /* ObjC example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ObjC example.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		93BE518D296EB1E5000DA679 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		93BE518E296EB1E5000DA679 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -152,6 +165,7 @@
 				935E135428F955EB00BAF8E3 /* AppDelegate.swift */,
 				935E136B28F955EB00BAF8E3 /* Cells */,
 				935E135128F955EB00BAF8E3 /* Components */,
+				CC46202026070001000000C1 /* CustomConsent */,
 				935E135528F955EB00BAF8E3 /* Extensions */,
 				935E135028F955EB00BAF8E3 /* Info.plist */,
 				935E136828F955EB00BAF8E3 /* MobileContentSolution */,
@@ -238,6 +252,36 @@
 				935E138828F9563100BAF8E3 /* mobileconsentsios */,
 			);
 			name = Packages;
+			sourceTree = "<group>";
+		};
+		CC46202026070001000000C1 /* CustomConsent */ = {
+			isa = PBXGroup;
+			children = (
+				CC46202026070001000000A1 /* ConsentColors.swift */,
+				CC46202026070001000000A2 /* CustomConsentViewController.swift */,
+				CC46202026070001000000C2 /* SwiftUI */,
+				CC46202026070001000000C3 /* Standalone */,
+				CC46202026070001000000A3 /* README.md */,
+			);
+			path = CustomConsent;
+			sourceTree = SOURCE_ROOT;
+		};
+		CC46202026070001000000C2 /* SwiftUI */ = {
+			isa = PBXGroup;
+			children = (
+				CC46202026070001000000A4 /* CustomConsentView.swift */,
+				CC46202026070001000000A5 /* CustomConsentSwiftUIController.swift */,
+			);
+			path = SwiftUI;
+			sourceTree = "<group>";
+		};
+		CC46202026070001000000C3 /* Standalone */ = {
+			isa = PBXGroup;
+			children = (
+				CC46202026070001000000A6 /* ConsentStore.swift */,
+				CC46202026070001000000A7 /* StandaloneConsentView.swift */,
+			);
+			path = Standalone;
 			sourceTree = "<group>";
 		};
 		9377B04E29B9F34500742C64 /* Custom View */ = {
@@ -420,6 +464,12 @@
 				935E138228F955EB00BAF8E3 /* MobileConsentsSolutionViewController.swift in Sources */,
 				935E137728F955EB00BAF8E3 /* Collection+Extensions.swift in Sources */,
 				9377B05629BA0A2500742C64 /* CustomPopup.swift in Sources */,
+				CC46202026070001000000B1 /* ConsentColors.swift in Sources */,
+				CC46202026070001000000B2 /* CustomConsentViewController.swift in Sources */,
+				CC46202026070001000000B4 /* CustomConsentView.swift in Sources */,
+				CC46202026070001000000B5 /* CustomConsentSwiftUIController.swift in Sources */,
+				CC46202026070001000000B6 /* ConsentStore.swift in Sources */,
+				CC46202026070001000000B7 /* StandaloneConsentView.swift in Sources */,
 				935E138528F955EB00BAF8E3 /* SavedItemTableViewCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

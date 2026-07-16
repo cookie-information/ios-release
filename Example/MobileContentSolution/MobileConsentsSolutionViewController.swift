@@ -73,6 +73,20 @@ final class MobileConsentsSolutionViewController: BaseViewController {
         alert.addAction(UIAlertAction(title: "Custom view controller", style: .default, handler: { (_) in
             self.viewModel.showPrivacyPopUp(style: .customController)
         }))
+
+        alert.addAction(UIAlertAction(title: "Brand custom UI", style: .default, handler: { (_) in
+            self.viewModel.showPrivacyPopUp(style: .brandCustomUI)
+        }))
+
+        if #available(iOS 15.0, *) {
+            alert.addAction(UIAlertAction(title: "Brand custom UI (SwiftUI)", style: .default, handler: { (_) in
+                self.viewModel.showPrivacyPopUp(style: .brandCustomSwiftUI)
+            }))
+
+            alert.addAction(UIAlertAction(title: "Brand custom UI (pure SwiftUI)", style: .default, handler: { (_) in
+                self.viewModel.showStandaloneConsent(from: self)
+            }))
+        }
         
         self.present(alert, animated: true)
     }
