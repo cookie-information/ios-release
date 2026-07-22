@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
   spec.name         = 'MobileConsentsSDK'
-  spec.version      = '2.0.0'
+  spec.version      = '1.6.0'
   spec.platform = :ios, '15.0'
   spec.summary      = 'Cookie information iOS SDK'
   spec.homepage     = 'https://github.com/cookie-information/ios-release'
