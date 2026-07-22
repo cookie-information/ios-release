@@ -30,9 +30,6 @@ final class Provider<EndPoint: EndpointType>: NetworkProvider {
         self.session = session
     }
     
-    // `task` is written from request() and read from cancel(), which can run on
-    // different threads (cancel() is reachable from the public
-    // MobileConsents.cancel()), so access is guarded by a lock.
     private let taskLock = NSLock()
     private var task: URLSessionTask?
     private let enableLogger: Bool

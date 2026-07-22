@@ -35,8 +35,6 @@ final class ConsentSolutionManager: ConsentSolutionManagerProtocol {
         settings.contains(where: \.required)
     }
 
-    /// All consent items the user can actually toggle. Privacy policy entries
-    /// are informational only — they are never selectable and never posted.
     public var settings: [ConsentItem] {
         consentSolution?.consentItems.filter { $0.type != .privacyPolicy } ?? []
     }
@@ -127,10 +125,6 @@ final class ConsentSolutionManager: ConsentSolutionManagerProtocol {
     }
     
     private func postConsent(selectedConsentItemIds: Set<String>, completion: @escaping (Error?) -> Void) {
-        // Must still deliver a result if the consent solution is not loaded yet,
-        // otherwise the completion never fires and the pop-up spinner hangs forever.
-        // Delivered through the dispatcher so the completion always arrives on the
-        // main queue, consistent with every other completion in this class.
         guard let consentSolution = consentSolution else {
             asyncDispatcher.async {
                 completion(ConsentSolutionManagerError.consentSolutionNotLoaded)

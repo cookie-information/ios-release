@@ -38,8 +38,6 @@ final class Router: RouterProtocol {
     }
     
     func closeAll(error: Error? = nil) {
-        // closeAll ends the pop-up session, so it must run at most once: a late
-        // tap must not fire the client callbacks or dismiss the host UI again.
         guard !isClosed else { return }
         isClosed = true
 
