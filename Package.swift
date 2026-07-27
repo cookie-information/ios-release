@@ -1,4 +1,4 @@
-// swift-tools-version: 5.7
+// swift-tools-version: 5.10
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "MobileConsentsSDK",
     defaultLocalization: LanguageTag(rawValue: "en"),
-    platforms: [.iOS(.v11)],
+    platforms: [.iOS(.v15)],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
@@ -22,17 +22,6 @@ let package = Package(
         .testTarget(
             name: "MobileConsentsSDKTests",
             dependencies: ["MobileConsentsSDK"],
-            exclude: [
-                "Info.plist",
-                "ConsentSolutionManagerTests.swift",
-                "DecodingTests.swift",
-                "LocalStorageManagerTests.swift",
-                "UI/PopUpConsentViewModelTests.swift",
-                "UI/PrivacyPopUpViewModelTests.swift",
-                "Mock/MockedUserDefaults.swift",
-            ],
-            resources: [
-                .process("Resources/ConsentSolution.json"),
-            ])
+            resources: [.process("Resources")])
     ]
 )

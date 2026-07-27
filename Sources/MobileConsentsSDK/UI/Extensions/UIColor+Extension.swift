@@ -48,15 +48,11 @@ extension UIColor {
     }
 
     static func adaptive(light: UIColor, dark: UIColor) -> UIColor {
-        if #available(iOS 13.0, *) {
-            return UIColor(dynamicProvider: { traitCollection in
-                switch traitCollection.userInterfaceStyle {
-                case .dark: return dark
-                default: return light
-                }
-            })
-        } else {
-            return light
-        }
+        UIColor(dynamicProvider: { traitCollection in
+            switch traitCollection.userInterfaceStyle {
+            case .dark: return dark
+            default: return light
+            }
+        })
     }
 }

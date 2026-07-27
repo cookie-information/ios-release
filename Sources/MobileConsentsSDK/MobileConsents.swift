@@ -147,7 +147,10 @@ public final class MobileConsents: NSObject, MobileConsentsProtocol {
         errorHandler: ((Error)->())? = nil
     ) {
         DispatchQueue.main.async {
-            let presentingViewController = presentingViewController ?? UIApplication.shared.windows.first { $0.isKeyWindow }?.topViewController
+            let windowScenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+            let keyWindow = windowScenes.first { $0.activationState == .foregroundActive }?.keyWindow
+                ?? windowScenes.compactMap(\.keyWindow).first
+            let presentingViewController = presentingViewController ?? keyWindow?.topViewController
             
             let consentSolutionManager = ConsentSolutionManager(
                 consentSolutionId: self.solutionId,

@@ -6,12 +6,13 @@ protocol RouterProtocol {
 
 final class Router: RouterProtocol {
     weak var rootViewController: UIViewController?
-    
+
     private let consentSolutionManager: ConsentSolutionManagerProtocol
     private let accentColor: UIColor
     private var completion: (([UserConsent])->())?
     private var errorHandler: ((Error)->())?
     private let fontSet: FontSet
+    private var isClosed = false
     
     init(consentSolutionManager: ConsentSolutionManagerProtocol, accentColor: UIColor? = nil, fontSet: FontSet) {
         self.consentSolutionManager = consentSolutionManager
@@ -32,15 +33,16 @@ final class Router: RouterProtocol {
 
         guard let viewController =  (popupController == nil ? PrivacyPopUpViewController(viewModel: viewModel, accentColor: accentColor, fontSet: fontSet) : popupController!.init(viewModel: viewModel) ) as? UIViewController else { return }
        
-        if #available(iOS 13.0, *) {
-            viewController.isModalInPresentation = true
-        }
+        viewController.isModalInPresentation = true
         rootViewController?.topViewController.present(viewController, animated: animated)
     }
     
     func closeAll(error: Error? = nil) {
+        guard !isClosed else { return }
+        isClosed = true
+
         defer { rootViewController?.dismiss(animated: true) }
-        
+
         if let error = error {
             self.errorHandler?(error)
             return

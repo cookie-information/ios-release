@@ -1,6 +1,12 @@
 
 # Mobile Consents SDK
 
+## Requirements
+- iOS 15.0 or newer
+- Swift 5.10 or newer (Xcode 15.3+)
+
+> **Note:** Version 1.6.0 raises the minimum supported iOS version to 15.0. If your app needs to support older iOS versions, stay on version 1.5.9.
+
 ## Installation
 ### Swift Package Manager
 MobileConsentsSDK is available through the Swift Package Manager (SPM) and CocoaPods. For the best experience we recommend using SPM by adding a new Package Dependency to your XCode project with the following repository URL:
@@ -41,7 +47,8 @@ MobileConsents *mobileConsents = [[MobileConsents alloc] initWithUiLanguageCode:
                                                               solutionId:@"<SOLUTION ID>"
                                                              accentColor: UIColor.systemBlueColor
                                                                  fontSet: FontSet.standard
-                                                                  enableNetworkLogger: YES];
+                                                    localizationOverride: @{}
+                                                     enableNetworkLogger: YES];
 ```
 
 # Using built-in mobile consents UI
@@ -101,11 +108,15 @@ The `showPrivacyPopUpIfNeeded` method is typically used to present the popup aft
 Just like in Swift, the same methods are used to display the privacy pop-up, only with a slight variation to reflect Objective-C naming conventions. 
 
 ```Objective-C
-       [self.mobileConsents showPrivacyPopUpIfNeededOnViewController:self
-                                                         animated:YES
-                                             ignoreVersionChanges:NO
-                                                       completion:^(NSArray<UserConsent *> * _Nonnull) {
+    [self.mobileConsents showPrivacyPopUpIfNeededWithCustomViewType:nil
+                                                   onViewController:self
+                                                           animated:YES
+                                               ignoreVersionChanges:NO
+                                                         completion:^(NSArray<UserConsent *> * _Nonnull consents) {
         // Handle consents here
+    }
+                                                       errorHandler:^(NSError * _Nonnull error) {
+        // Handle the error here
     }];
 ```
 

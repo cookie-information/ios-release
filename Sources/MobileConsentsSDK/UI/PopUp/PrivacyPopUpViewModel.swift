@@ -96,7 +96,7 @@ public final class PrivacyPopUpViewModel: NSObject, PrivacyPopUpViewModelProtoco
     private func consentViewModels(from solution: ConsentSolution, required: Bool = false) -> [PopUpConsentViewModel] {
         solution
             .consentItems
-            .filter { ($0.type != .privacyPolicy && $0.type != .privacyPolicy ) && $0.required == required }
+            .filter { $0.type != .privacyPolicy && $0.required == required }
             .map { item in
                 PopUpConsentViewModel(
                     id: item.id,
@@ -112,6 +112,11 @@ public final class PrivacyPopUpViewModel: NSObject, PrivacyPopUpViewModelProtoco
     
     private func handlePostingConsent(buttonType: PopUpButtonViewModel.ButtonType, error: Error?) {
         onLoadingChange?(false)
+
+        if let error = error as? ConsentSolutionManagerError, case .consentSolutionNotLoaded = error {
+            return
+        }
+
         router?.closeAll(error: error)
     }
 }

@@ -24,35 +24,26 @@ final class ConsentSolutionManager: ConsentSolutionManagerProtocol {
     static let consentItemSelectionDidChange = Notification.Name(rawValue: "com.cookieinformation.consentItemSelectionDidChange")
     
     var areAllRequiredConsentItemsSelected: Bool {
-        consentSolution?
-            .consentItems
-            .filter { $0.required && ($0.type != .privacyPolicy || $0.type != .privacyPolicy )}
+        guard consentSolution != nil else { return false }
+        return settings
+            .filter(\.required)
             .map(\.id)
             .allSatisfy(selectedConsentItemIds.contains)
-            ??
-            false
     }
-    
+
     var hasRequiredConsentItems: Bool {
-        !(consentSolution?
-            .consentItems
-            .filter { $0.required && ($0.type != .privacyPolicy || $0.type != .privacyPolicy ) }
-            .isEmpty
-            ??
-            true)
+        settings.contains(where: \.required)
     }
-    
+
     public var settings: [ConsentItem] {
-        consentSolution?.consentItems.filter { ($0.type != .privacyPolicy || $0.type != .privacyPolicy )} ?? []
+        consentSolution?.consentItems.filter { $0.type != .privacyPolicy } ?? []
     }
-    
+
     private var allSettingsItemIds: [String] {
-        consentSolution?.consentItems
-            .filter {($0.type != .privacyPolicy || $0.type != .privacyPolicy ) }
-            .map(\.id) ?? []
+        settings.map(\.id)
     }
-    
-    
+
+
     private let consentSolutionId: String
     private let mobileConsents: MobileConsentsProtocol
     private let notificationCenter: NotificationCenter
@@ -133,17 +124,16 @@ final class ConsentSolutionManager: ConsentSolutionManagerProtocol {
         postConsent(selectedConsentItemIds: selectedConsentItemIds, completion: completion)
     }
     
-    func setLocalizationOverride(_ labels: NSDictionary) {
-        
-    }
-    
     private func postConsent(selectedConsentItemIds: Set<String>, completion: @escaping (Error?) -> Void) {
-        guard let consentSolution = consentSolution else { return }
+        guard let consentSolution = consentSolution else {
+            asyncDispatcher.async {
+                completion(ConsentSolutionManagerError.consentSolutionNotLoaded)
+            }
+            return
+        }
         
-        let infoConsentItemIds = consentSolution.consentItems.filter { $0.type == .privacyPolicy }.map(\.id)
-        let givenConsentItemIds = selectedConsentItemIds.union(infoConsentItemIds)
-        let userConsents = consentSolution.consentItems.filter {($0.type != .privacyPolicy || $0.type != .privacyPolicy )}.map {UserConsent(consentItem: $0, isSelected: selectedConsentItemIds.contains($0.id) || $0.required)}
-        
+        let userConsents = settings.map { UserConsent(consentItem: $0, isSelected: selectedConsentItemIds.contains($0.id) || $0.required) }
+
         let consent = Consent(consentSolutionId: consentSolution.id, consentSolutionVersionId: consentSolution.versionId, userConsents: userConsents)
 
         
@@ -156,5 +146,16 @@ final class ConsentSolutionManager: ConsentSolutionManagerProtocol {
     
     private func postConsentItemSelectionDidChangeNotification() {
         notificationCenter.post(Notification(name: Self.consentItemSelectionDidChange))
+    }
+}
+
+enum ConsentSolutionManagerError: LocalizedError {
+    case consentSolutionNotLoaded
+
+    var errorDescription: String? {
+        switch self {
+        case .consentSolutionNotLoaded:
+            return "Cannot post consent because the consent solution has not been loaded yet."
+        }
     }
 }

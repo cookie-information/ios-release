@@ -42,16 +42,12 @@ final class HTMLTextView: UITextView {
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
         
-        if #available(iOS 12.0, *) {
-            if traitCollection.userInterfaceStyle != previousTraitCollection?.userInterfaceStyle ||
-                traitCollection.preferredContentSizeCategory != previousTraitCollection?.preferredContentSizeCategory {
-                // Fixes crash caused by trait collection change when link in text view is tapped and external Safari opens
-                DispatchQueue.main.async {
-                    self.updateHTML()
-                }
+        if traitCollection.userInterfaceStyle != previousTraitCollection?.userInterfaceStyle ||
+            traitCollection.preferredContentSizeCategory != previousTraitCollection?.preferredContentSizeCategory {
+            // Fixes crash caused by trait collection change when link in text view is tapped and external Safari opens
+            DispatchQueue.main.async {
+                self.updateHTML()
             }
-        } else {
-            // Fallback on earlier versions
         }
     }
     

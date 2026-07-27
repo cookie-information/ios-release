@@ -105,8 +105,7 @@ final class PrivacyPopUpViewController: UIViewController, PrivacyPopupProtocol {
     }()
     
     private var privacyPolicyLongtext = ""
-    private lazy var buttonsView = { PopUpButtonsView(accentColor: accentColor) }()
-    private let activityIndicator = UIActivityIndicatorView(style: .whiteLarge)
+    private let activityIndicator = UIActivityIndicatorView(style: .large)
     private let accentColor: UIColor
     private let viewModel: PrivacyPopUpViewModelProtocol
     private var sections = [Section]()
@@ -164,7 +163,7 @@ final class PrivacyPopUpViewController: UIViewController, PrivacyPopupProtocol {
         poweredByLabel.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
-            navigationBar.topAnchor.constraint(equalTo: view.topAnchor),
+            navigationBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: popUpNavigationBarTopInset),
             navigationBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             navigationBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             
@@ -227,7 +226,6 @@ final class PrivacyPopUpViewController: UIViewController, PrivacyPopupProtocol {
             let chevron = UIImage(named: "chevron", in: Bundle.module, compatibleWith: nil)
             
             self.readMoreButton.setImage(chevron, for: .normal)
-            self.readMoreButton.imageEdgeInsets = UIEdgeInsets(top: 2, left: 0, bottom: 2, right: 0)
             self.readMoreButton.semanticContentAttribute = .forceRightToLeft
             
             

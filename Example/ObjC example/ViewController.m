@@ -22,25 +22,28 @@
                                                                 clientID:@""
                                                             clientSecret:@""
                                                               solutionId:@""
-                                                             accentColor: UIColor.systemBlueColor
-                                                                 fontSet: FontSet.standard];
-    
-    
+                                                             accentColor:UIColor.systemBlueColor
+                                                                 fontSet:FontSet.standard
+                                                    localizationOverride:@{}
+                                                     enableNetworkLogger:NO];
+
     // Do any additional setup after loading the view.
 }
 
 
 - (void)viewDidAppear:(BOOL)animated {
-    [super viewDidAppear: animated];
-    [self.mobileConsents showPrivacyPopOnViewController:self animated:YES completion:^(NSArray<UserConsent *> *consents) {
-        for(UserConsent* consent in consents) {
-            NSLog(@"@", [consent])
+    [super viewDidAppear:animated];
+    [self.mobileConsents showPrivacyPopUpWithCustomViewType:nil
+                                           onViewController:self
+                                                   animated:YES
+                                                 completion:^(NSArray<UserConsent *> *consents) {
+        for (UserConsent *consent in consents) {
+            NSLog(@"%@", consent);
         }
-    } errorHandler:^(NSError * _Nonnull) {
-        
-    }]
-    [self.mobileConsents showPrivacyPopUpOnViewController:self animated:YES completion:nil];
-
+    }
+                                               errorHandler:^(NSError *error) {
+        NSLog(@"Privacy pop up error: %@", error);
+    }];
 }
 
 @end

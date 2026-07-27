@@ -30,10 +30,11 @@ final class Provider<EndPoint: EndpointType>: NetworkProvider {
         self.session = session
     }
     
+    private let taskLock = NSLock()
     private var task: URLSessionTask?
     private let enableLogger: Bool
     private let session: URLSession
-    
+
     func request(_ route: EndPoint, completion: @escaping NetworkProviderCompletion) {
         let session = session
         do {
@@ -41,19 +42,25 @@ final class Provider<EndPoint: EndpointType>: NetworkProvider {
             if enableLogger {
                 NetworkLogger.log(request: request)
             }
-            task = session.dataTask(with: request, completionHandler: { data, response, error in
+            let task = session.dataTask(with: request, completionHandler: { data, response, error in
                 if let response = response, self.enableLogger {
                     NetworkLogger.log(response: response, data: data)
                 }
                 completion(data, response, error)
             })
-            task?.resume()
+            taskLock.lock()
+            self.task = task
+            taskLock.unlock()
+            task.resume()
         } catch {
             completion(nil, nil, error)
         }
     }
-    
+
     func cancel() {
+        taskLock.lock()
+        let task = self.task
+        taskLock.unlock()
         task?.cancel()
     }
     

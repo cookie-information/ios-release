@@ -3,8 +3,6 @@ import UIKit
 protocol LocalStorageManagerProtocol {
     var userId: String { get }
     var consents: [String: UserConsent] { get }
-    func removeUserId()
-    func addConsent(consentItemId: String, consent: UserConsent)
     func addConsentsArray(_ consentsArray: [UserConsent], versionId: String)
     func clearAll()
 }
@@ -48,10 +46,6 @@ struct LocalStorageManager: LocalStorageManagerProtocol {
         return userId
     }
     
-    func removeUserId() {
-        userDefaults.removeObject(forKey: userId)
-    }
-    
     var consents: [String: UserConsent] {
         guard let consents: [String: Any] = userDefaults.get(forKey: consentsKey) else { return [:] }
         return  consents
@@ -73,16 +67,10 @@ struct LocalStorageManager: LocalStorageManagerProtocol {
         
     }
     
-    func addConsent(consentItemId: String, consent: UserConsent) {
-        var consents = self.consents
-        consents[consentItemId] = consent
-        userDefaults.set(consents, forKey: consentsKey)
-        
-    }
-    
     func addConsentsArray(_ consentsArray: [UserConsent], versionId: String) {
-        var consents = [String: Any]()
         userDefaults.set(versionId, forKey: consentSolutionVersionIdKey)
+        guard !consentsArray.isEmpty else { return }
+        var consents = [String: Any]()
         consentsArray.forEach { consent in
             do {
                 let id = consent.consentItem.id
@@ -91,8 +79,8 @@ struct LocalStorageManager: LocalStorageManagerProtocol {
             } catch {
                 debugPrint(error)
             }
-            userDefaults.set(consents, forKey: consentsKey)
         }
+        userDefaults.set(consents, forKey: consentsKey)
     }
     
     

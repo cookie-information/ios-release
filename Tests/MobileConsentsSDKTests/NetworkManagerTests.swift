@@ -5,9 +5,7 @@ final class NetworkManagerTests: XCTestCase {
     private var session: URLSession!
     private var sut: NetworkManager!
 
-    override func setUp() {
-        super.setUp()
-
+    override func setUp() async throws {
         MockURLProtocol.reset()
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [MockURLProtocol.self]
@@ -24,11 +22,10 @@ final class NetworkManagerTests: XCTestCase {
         )
     }
 
-    override func tearDown() {
+    override func tearDown() async throws {
         sut = nil
         session = nil
         MockURLProtocol.reset()
-        super.tearDown()
     }
 
     func testPostConsent_whenCredentialsAreInvalid_completesOnceWithInvalidClientCredentials() {
@@ -44,22 +41,22 @@ final class NetworkManagerTests: XCTestCase {
         }
 
         let expectation = expectation(description: "postConsent completes")
-        var completionCount = 0
-        var receivedError: Error?
+        let completionCount = Ref(0)
+        let receivedError = Ref<Error?>(nil)
 
         sut.postConsent(sampleConsent) { error in
-            completionCount += 1
-            receivedError = error
+            completionCount.value += 1
+            receivedError.value = error
             expectation.fulfill()
         }
 
         waitForExpectations(timeout: 2)
-        XCTAssertEqual(completionCount, 1)
+        XCTAssertEqual(completionCount.value, 1)
         XCTAssertEqual(MockURLProtocol.oauthRequestCount, 1)
-        if case .invalidClientCredentials(let message)? = receivedError as? NetworkResponseError {
+        if case .invalidClientCredentials(let message)? = receivedError.value as? NetworkResponseError {
             XCTAssertEqual(message, "Bad credentials")
         } else {
-            XCTFail("Expected invalidClientCredentials, got \(String(describing: receivedError))")
+            XCTFail("Expected invalidClientCredentials, got \(String(describing: receivedError.value))")
         }
     }
 
@@ -94,14 +91,14 @@ final class NetworkManagerTests: XCTestCase {
         }
 
         let secondExpectation = expectation(description: "second postConsent completes")
-        var secondError: Error?
+        let secondError = Ref<Error?>(nil)
         sut.postConsent(sampleConsent) { error in
-            secondError = error
+            secondError.value = error
             secondExpectation.fulfill()
         }
         waitForExpectations(timeout: 2)
 
-        XCTAssertNil(secondError)
+        XCTAssertNil(secondError.value)
         XCTAssertEqual(MockURLProtocol.oauthRequestCount, 2, "Second call should re-attempt authorization")
         XCTAssertEqual(MockURLProtocol.consentRequestCount, 1)
     }
@@ -115,15 +112,15 @@ final class NetworkManagerTests: XCTestCase {
         }
 
         let expectation = expectation(description: "postConsent completes")
-        var receivedError: Error?
+        let receivedError = Ref<Error?>(nil)
 
         sut.postConsent(sampleConsent) { error in
-            receivedError = error
+            receivedError.value = error
             expectation.fulfill()
         }
 
         waitForExpectations(timeout: 2)
-        XCTAssertNil(receivedError)
+        XCTAssertNil(receivedError.value)
         XCTAssertEqual(MockURLProtocol.oauthRequestCount, 1)
         XCTAssertEqual(MockURLProtocol.consentRequestCount, 1)
     }
@@ -140,18 +137,18 @@ final class NetworkManagerTests: XCTestCase {
         }
 
         let expectation = expectation(description: "postConsent completes")
-        var completionCount = 0
-        var receivedError: Error?
+        let completionCount = Ref(0)
+        let receivedError = Ref<Error?>(nil)
 
         sut.postConsent(sampleConsent) { error in
-            completionCount += 1
-            receivedError = error
+            completionCount.value += 1
+            receivedError.value = error
             expectation.fulfill()
         }
 
         waitForExpectations(timeout: 2)
-        XCTAssertEqual(completionCount, 1)
-        XCTAssertNotNil(receivedError)
+        XCTAssertEqual(completionCount.value, 1)
+        XCTAssertNotNil(receivedError.value)
         XCTAssertLessThanOrEqual(MockURLProtocol.oauthRequestCount, 2)
         XCTAssertLessThanOrEqual(MockURLProtocol.consentRequestCount, 2)
     }
@@ -179,14 +176,14 @@ final class NetworkManagerTests: XCTestCase {
         }
 
         let secondExpectation = expectation(description: "second postConsent completes")
-        var secondError: Error?
+        let secondError = Ref<Error?>(nil)
         sut.postConsent(sampleConsent) { error in
-            secondError = error
+            secondError.value = error
             secondExpectation.fulfill()
         }
         waitForExpectations(timeout: 2)
 
-        XCTAssertNil(secondError)
+        XCTAssertNil(secondError.value)
         XCTAssertEqual(MockURLProtocol.oauthRequestCount, 2, "Second call should re-attempt authorization")
     }
 
@@ -194,6 +191,18 @@ final class NetworkManagerTests: XCTestCase {
 
     private static func response(for request: URLRequest, statusCode: Int) -> HTTPURLResponse {
         HTTPURLResponse(url: request.url!, statusCode: statusCode, httpVersion: nil, headerFields: nil)!
+    }
+}
+
+/// Thread-safe mutable reference for capturing results from completion
+/// handlers in tests (completions may be invoked on URLSession's background queue).
+final class Ref<Value> {
+    private let lock = NSLock()
+    private var _value: Value
+    init(_ value: Value) { _value = value }
+    var value: Value {
+        get { lock.lock(); defer { lock.unlock() }; return _value }
+        set { lock.lock(); defer { lock.unlock() }; _value = newValue }
     }
 }
 

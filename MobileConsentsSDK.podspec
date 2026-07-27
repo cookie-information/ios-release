@@ -1,7 +1,7 @@
 Pod::Spec.new do |spec|
   spec.name         = 'MobileConsentsSDK'
-  spec.version      = '1.5.9'
-  spec.platform = :ios, '11.0'
+  spec.version      = '1.6.0'
+  spec.platform = :ios, '15.0'
   spec.summary      = 'Cookie information iOS SDK'
   spec.homepage     = 'https://github.com/cookie-information/ios-release'
   spec.author       = 'Cookie Information'
@@ -9,6 +9,6 @@ Pod::Spec.new do |spec|
   
   spec.source_files = 'Sources/MobileConsentsSDK/**/*.swift'
   spec.resource_bundle = {'MobileConsentsSDK' => 'Sources/MobileConsentsSDK/Resources/*'}
-  spec.swift_version = '5.0'
+  spec.swift_version = '5.10'
 
 end
