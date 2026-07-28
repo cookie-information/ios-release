@@ -6,19 +6,22 @@ and consent storage; these files provide only the UI.
 
 The design:
 
-- action buttons pinned to the bottom of the screen,
+- an intro above the categories with links to the Privacy Policy and the Cookie Policy,
+- a scrolling category list with the action buttons fixed at the bottom of the screen,
 - categories separated by 32pt of vertical spacing instead of divider lines,
 - brand blue (`#093A5C`) for the primary button and selected toggles,
 - dark mode limited to black, white and grey tones (accent stays brand blue).
 
 The screen comes in three variants rendering the same design — pick the one that
-matches your app's UI stack:
+matches your app's UI stack. Every variant also needs the three shared files
+`ConsentColors.swift` (palette), `ConsentConfiguration.swift` (text and settings) and
+`PolicyViewController.swift` (the screen the policy links open):
 
-| Variant | Files to copy | Minimum iOS |
+| Variant | Files to copy (plus the shared three) | Minimum iOS |
 |---|---|---|
-| **UIKit** | `CustomConsentViewController.swift` + `ConsentColors.swift` | 12 |
-| **SwiftUI** | `SwiftUI/CustomConsentView.swift` + `SwiftUI/CustomConsentSwiftUIController.swift` + `ConsentColors.swift` | 15 |
-| **Standalone SwiftUI** | `Standalone/StandaloneConsentView.swift` + `Standalone/ConsentStore.swift` + `ConsentColors.swift` | 15 |
+| **UIKit** | `CustomConsentViewController.swift` | 12 |
+| **SwiftUI** | `SwiftUI/CustomConsentView.swift` + `SwiftUI/CustomConsentSwiftUIController.swift` + `PolicyWebView.swift` | 15 |
+| **Standalone SwiftUI** | `Standalone/StandaloneConsentView.swift` + `Standalone/ConsentStore.swift` + `PolicyWebView.swift` | 15 |
 
 The UIKit and SwiftUI variants plug into the SDK's `customViewType` hook — the SDK
 presents and dismisses the screen and reports the result through its completion
@@ -73,18 +76,55 @@ The completion closure receives the user's saved consents once the screen closes
 
 | Button | What it does |
 |---|---|
-| **Only Necessary** | Accepts the required categories, rejects every optional one regardless of the toggles, then saves. |
-| **Save choices** | Saves exactly what the user toggled (required categories stay on). |
+| **Only Necessary** (secondary) | Accepts the required categories and rejects every optional one, whatever the toggles show. |
+| **Accept All** (primary, default) | Accepts every category. |
+| **Save Choices** (primary, after a change) | Once the user enables an optional category the primary button becomes "Save Choices" and saves exactly what the user toggled. |
 
-Required categories (for example *Necessary*) are shown on and greyed out. They cannot
-be turned off.
+Optional categories always start off, so a returning user is not shown their previous
+selection as the default. This affects the toggles only — previously given consents stay
+saved and are still returned by `getSavedConsents()`. Nothing is silently revoked either:
+with every optional category off the primary button reads "Accept All", so rejecting them
+all takes a deliberate tap on "Only Necessary".
+
+Required categories (for example *Necessary*) are shown on, greyed out and cannot be
+turned off.
+
+## Category order
+
+Categories are shown in the order Necessary, Functional, Statistical, Marketing, then
+anything else as the dashboard returns it.
+
+The two variants presented through the `customViewType` hook only receive the category
+*titles* from the SDK, so they match the keywords in
+`ConsentConfiguration.categoryOrderKeywords` case-insensitively against the title —
+**adjust that list to your own dashboard category names** (for example `"advertising"`
+instead of `"marketing"`). The standalone variant has the category type available and
+orders by it directly, ignoring the list.
+
+## Privacy and Cookie policy links
+
+The intro above the categories shows two links, each opening in an in-app web view.
+
+**Privacy Policy** content comes from the dashboard, the same as the SDK's built-in UI:
+whatever is configured there is what opens — a URL loads that page, text or HTML is
+rendered as is.
+
+**Cookie Policy** has no entry in the dashboard, so its URL is set in
+`ConsentConfiguration.cookiePolicyURL`. A link whose content is missing is shown as
+plain, non-tappable text.
+
+Both links open `PolicyViewController`, a plain web view styled with `ConsentColors`.
+The SDK's built-in `PrivacyPolicyDetail` is public and can be used instead if you would
+rather carry one file less — see the note at the top of `PolicyViewController.swift` for
+the differences.
 
 ## Where to change things
 
 | Change | Where |
 |---|---|
-| Brand color, light and dark palette (all variants) | `ConsentColors.swift` |
-| Screen text (title, button labels) | `Strings` enum in the variant's view file |
+| Screen text (title, intro, button labels) | `ConsentConfiguration.swift` |
+| Cookie Policy URL, category order | `ConsentConfiguration.swift` |
+| Brand color, light and dark palette | `ConsentColors.swift` |
 | Spacing, corner radius, button height | `Layout` enum in `CustomConsentViewController.swift`; inline modifiers in the SwiftUI views |
 | Screen layout | The variant's view file |
 

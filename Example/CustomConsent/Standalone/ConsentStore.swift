@@ -27,6 +27,14 @@ final class ConsentStore: ObservableObject {
 
     @Published private(set) var isLoading = false
     @Published var categories: [Category] = []
+    /// Privacy policy content from the dashboard: a URL or raw HTML.
+    @Published private(set) var privacyPolicy = ""
+
+    /// `true` once the user enables at least one optional category, which turns the primary
+    /// button from "Accept All" into "Save Choices".
+    var hasOptionalSelection: Bool {
+        categories.contains { !$0.isRequired && $0.isOn }
+    }
 
     /// Called with the saved consents after a successful save. Close the screen here.
     var onFinished: ([UserConsent]) -> Void = { _ in }
@@ -69,6 +77,12 @@ final class ConsentStore: ObservableObject {
         save()
     }
 
+    /// Consents to every category, then saves.
+    func acceptAll() {
+        categories.indices.forEach { categories[$0].isOn = true }
+        save()
+    }
+
     /// Accepts the required categories, rejects every optional one, then saves.
     func onlyNecessary() {
         categories.indices.forEach { categories[$0].isOn = categories[$0].isRequired }
@@ -76,20 +90,30 @@ final class ConsentStore: ObservableObject {
     }
 
     private func buildCategories(from solution: ConsentSolution) {
-        let saved = Dictionary(
-            mobileConsents.getSavedConsents().map { ($0.consentItem.id, $0.isSelected) },
-            uniquingKeysWith: { first, _ in first }
-        )
-        // The privacy policy is a separate entry, not a toggleable category.
-        let items = solution.consentItems.filter { $0.type != .privacyPolicy }
-        // Required categories first.
-        let ordered = items.filter(\.required) + items.filter { !$0.required }
+        // The privacy policy is a separate entry, not a toggleable category. Its content
+        // (a URL or HTML) is what the Privacy Policy link opens.
+        privacyPolicy = solution.consentItems
+            .first { $0.type == .privacyPolicy }?
+            .translations.primaryTranslation().longText ?? ""
+
+        // Ordered Necessary, Functional, Statistical, Marketing, then the rest.
+        let ordered = solution.consentItems
+            .filter { $0.type != .privacyPolicy }
+            .enumerated()
+            .sorted { lhs, rhs in
+                let left = ConsentConfiguration.sortIndex(for: lhs.element.type)
+                let right = ConsentConfiguration.sortIndex(for: rhs.element.type)
+                return left == right ? lhs.offset < rhs.offset : left < right
+            }
+            .map { $0.element }
+
+        // Optional categories always start off, whatever was saved previously.
         categories = ordered.map { item in
             Category(
                 item: item,
                 title: item.translations.primaryTranslation().shortText,
                 description: Self.attributedDescription(fromHTML: item.translations.primaryTranslation().longText),
-                isOn: item.required || (saved[item.id] ?? false)
+                isOn: item.required
             )
         }
     }

@@ -16,15 +16,39 @@ final class ConsentScreenState: ObservableObject {
 
     @Published var isLoading = true
     @Published var categories: [Category] = []
+    /// Privacy policy content from the dashboard: a URL or raw HTML.
+    @Published var privacyPolicy = ""
 
     var onOnlyNecessary: () -> Void = {}
+    var onAcceptAll: () -> Void = {}
     var onSaveChoices: () -> Void = {}
 
     private var models: [SwitchCellViewModel] = []
 
-    /// Sections arrive as [required, optional], so required categories come first.
-    func load(sections: [PopUpConsentsSection]) {
-        models = sections.flatMap { $0.viewModels }
+    /// `true` once the user enables at least one optional category, which turns the primary
+    /// button from "Accept All" into "Save Choices".
+    var hasOptionalSelection: Bool {
+        categories.contains { !$0.isRequired && $0.isOn }
+    }
+
+    func load(_ data: PrivacyPopUpData) {
+        privacyPolicy = data.privacyPolicyLongtext
+
+        // The hook only exposes category titles, so the configured order is matched against
+        // them; required categories (which the SDK returns first) stay first either way.
+        models = data.sections
+            .flatMap { $0.viewModels }
+            .enumerated()
+            .sorted { lhs, rhs in
+                let left = ConsentConfiguration.sortIndex(forTitle: lhs.element.title)
+                let right = ConsentConfiguration.sortIndex(forTitle: rhs.element.title)
+                return left == right ? lhs.offset < rhs.offset : left < right
+            }
+            .map { $0.element }
+
+        // Optional categories always start off, whatever was saved previously.
+        models.filter { !$0.isRequired }.forEach { $0.selectionDidChange(false) }
+
         categories = models.enumerated().map { index, model in
             Category(
                 id: index,
@@ -117,12 +141,16 @@ public final class CustomConsentSwiftUIController: UIViewController, PrivacyPopu
             // Accepts the required categories, rejects every optional one, saves and closes.
             self?.viewModel.rejectAll()
         }
+        state.onAcceptAll = { [weak self] in
+            // Consents to every category, saves and closes.
+            self?.viewModel.acceptAll()
+        }
         state.onSaveChoices = { [weak self] in
             // Saves exactly what the user toggled (required categories stay on) and closes.
             self?.viewModel.acceptSelected()
         }
         viewModel.onDataLoaded = { [weak self] data in
-            self?.state.load(sections: data.sections)
+            self?.state.load(data)
         }
         viewModel.onLoadingChange = { [weak self] isLoading in
             self?.state.isLoading = isLoading

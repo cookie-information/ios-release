@@ -6,25 +6,25 @@ import MobileConsentsSDK
 ///     mobileConsents.showPrivacyPopUp(customViewType: CustomConsentViewController.self)
 ///
 /// The SDK keeps handling networking, caching and saving; this class provides only the UI:
-///  - a title and one row per category (title, toggle, description),
-///    separated by 32pt of vertical spacing instead of divider lines,
-///  - action buttons pinned to the bottom of the screen,
-///  - "Only Necessary": accepts the required categories, rejects every optional one,
-///  - "Save choices":   saves exactly what the user toggled (required categories stay on),
+///  - an intro with Privacy Policy and Cookie Policy links above the categories,
+///  - one row per category (title, toggle, description), separated by 32pt of vertical
+///    spacing instead of divider lines, ordered by `ConsentConfiguration`,
+///  - a scrolling category list with the action buttons fixed at the bottom,
 ///  - brand blue accent, black/white/grey dark mode (palette in ConsentColors.swift).
+///
+/// Button behaviour:
+///  - "Only Necessary" (secondary) accepts the required categories and rejects every optional one.
+///  - "Accept All" (primary) accepts every category. Once the user enables an optional category
+///    the primary button becomes "Save Choices" and saves exactly what the user toggled.
+///
+/// Optional categories always start off, so a returning user is not shown their previous
+/// selection as the default.
 public final class CustomConsentViewController: UIViewController, PrivacyPopupProtocol {
-
-    private enum Strings {
-        // Hardcoded to match the design. Replace with `data.title` etc. in
-        // render(_:) to use the texts configured in the dashboard instead.
-        static let title = "Cookie settings"
-        static let onlyNecessary = "Only Necessary"
-        static let saveChoices = "Save choices"
-    }
 
     private enum Layout {
         static let contentPadding: CGFloat = 24
         static let categorySpacing: CGFloat = 32 // vertical gap between categories
+        static let headerSpacing: CGFloat = 12   // gap between the title and the intro
         static let buttonBarPadding: CGFloat = 16
         static let buttonSpacing: CGFloat = 12
         static let buttonHeight: CGFloat = 48
@@ -34,6 +34,13 @@ public final class CustomConsentViewController: UIViewController, PrivacyPopupPr
     private let viewModel: PrivacyPopUpViewModel
     private var categoryModels: [SwitchCellViewModel] = []
     private var descriptionRows: [(label: UILabel, html: String)] = []
+    private var privacyPolicyContent = ""
+
+    /// `true` once the user enables at least one optional category, which turns the primary
+    /// button from "Accept All" into "Save Choices".
+    private var hasOptionalSelection: Bool {
+        categoryModels.contains { !$0.isRequired && $0.isSelected }
+    }
 
     public init(viewModel: PrivacyPopUpViewModel) {
         self.viewModel = viewModel
@@ -65,11 +72,34 @@ public final class CustomConsentViewController: UIViewController, PrivacyPopupPr
 
     private lazy var titleLabel: UILabel = {
         let label = UILabel()
-        label.text = Strings.title
+        label.text = ConsentConfiguration.title
         label.font = .systemFont(ofSize: 24, weight: .bold)
         label.textColor = ConsentColors.title
         label.numberOfLines = 0
         return label
+    }()
+
+    private lazy var introTextView: UITextView = {
+        let textView = UITextView()
+        textView.isEditable = false
+        textView.isScrollEnabled = false
+        textView.backgroundColor = .clear
+        textView.textContainerInset = .zero
+        textView.textContainer.lineFragmentPadding = 0
+        textView.delegate = self
+        // UITextView draws links with its own attributes, overriding those in the string.
+        textView.linkTextAttributes = [
+            .foregroundColor: ConsentColors.secondary,
+            .underlineStyle: NSUnderlineStyle.single.rawValue
+        ]
+        return textView
+    }()
+
+    private lazy var headerStack: UIStackView = {
+        let stack = UIStackView(arrangedSubviews: [titleLabel, introTextView])
+        stack.axis = .vertical
+        stack.spacing = Layout.headerSpacing
+        return stack
     }()
 
     private lazy var divider: UIView = {
@@ -80,7 +110,7 @@ public final class CustomConsentViewController: UIViewController, PrivacyPopupPr
 
     private lazy var onlyNecessaryButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle(Strings.onlyNecessary, for: .normal)
+        button.setTitle(ConsentConfiguration.onlyNecessaryButton, for: .normal)
         button.setTitleColor(ConsentColors.secondary, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
         button.layer.cornerRadius = Layout.cornerRadius
@@ -89,19 +119,19 @@ public final class CustomConsentViewController: UIViewController, PrivacyPopupPr
         return button
     }()
 
-    private lazy var saveChoicesButton: UIButton = {
+    private lazy var primaryButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle(Strings.saveChoices, for: .normal)
+        button.setTitle(ConsentConfiguration.acceptAllButton, for: .normal)
         button.setTitleColor(ConsentColors.onAccent, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
         button.backgroundColor = ConsentColors.accent
         button.layer.cornerRadius = Layout.cornerRadius
-        button.addTarget(self, action: #selector(saveChoicesTapped), for: .touchUpInside)
+        button.addTarget(self, action: #selector(primaryTapped), for: .touchUpInside)
         return button
     }()
 
     private lazy var buttonBar: UIStackView = {
-        let stack = UIStackView(arrangedSubviews: [onlyNecessaryButton, saveChoicesButton])
+        let stack = UIStackView(arrangedSubviews: [onlyNecessaryButton, primaryButton])
         stack.axis = .horizontal
         stack.distribution = .fillEqually
         stack.spacing = Layout.buttonSpacing
@@ -143,7 +173,7 @@ public final class CustomConsentViewController: UIViewController, PrivacyPopupPr
         loadingOverlay.addSubview(activityIndicator)
         activityIndicator.color = ConsentColors.accent
 
-        contentStack.addArrangedSubview(titleLabel)
+        contentStack.addArrangedSubview(headerStack)
 
         NSLayoutConstraint.activate([
             scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
@@ -194,16 +224,33 @@ public final class CustomConsentViewController: UIViewController, PrivacyPopupPr
     // MARK: - Rendering
 
     private func render(_ data: PrivacyPopUpData) {
-        contentStack.arrangedSubviews.filter { $0 !== titleLabel }.forEach {
+        contentStack.arrangedSubviews.filter { $0 !== headerStack }.forEach {
             contentStack.removeArrangedSubview($0)
             $0.removeFromSuperview()
         }
         descriptionRows = []
-        // Sections arrive as [required, optional], so required categories come first.
-        categoryModels = data.sections.flatMap { $0.viewModels }
+        privacyPolicyContent = data.privacyPolicyLongtext
+        introTextView.attributedText = makeIntroText()
+
+        // The hook only exposes category titles, so the configured order is matched against
+        // them; required categories (which the SDK returns first) stay first either way.
+        categoryModels = data.sections
+            .flatMap { $0.viewModels }
+            .enumerated()
+            .sorted { lhs, rhs in
+                let left = ConsentConfiguration.sortIndex(forTitle: lhs.element.title)
+                let right = ConsentConfiguration.sortIndex(forTitle: rhs.element.title)
+                return left == right ? lhs.offset < rhs.offset : left < right
+            }
+            .map { $0.element }
+
+        // Optional categories always start off, whatever was saved previously.
+        categoryModels.filter { !$0.isRequired }.forEach { $0.selectionDidChange(false) }
+
         categoryModels.enumerated().forEach { index, model in
             contentStack.addArrangedSubview(makeCategoryView(for: model, index: index))
         }
+        updatePrimaryButton()
     }
 
     private func makeCategoryView(for model: SwitchCellViewModel, index: Int) -> UIView {
@@ -252,6 +299,43 @@ public final class CustomConsentViewController: UIViewController, PrivacyPopupPr
         return category
     }
 
+    /// Intro paragraph with tappable Privacy Policy and Cookie Policy links. A label whose
+    /// content is missing is shown as plain (non-tappable) text.
+    private func makeIntroText() -> NSAttributedString {
+        let bodyAttributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.systemFont(ofSize: 14),
+            .foregroundColor: ConsentColors.categoryDescription
+        ]
+        let linkAttributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.systemFont(ofSize: 14, weight: .bold),
+            .foregroundColor: ConsentColors.secondary,
+            .underlineStyle: NSUnderlineStyle.single.rawValue
+        ]
+
+        let text = NSMutableAttributedString(string: ConsentConfiguration.intro + " ", attributes: bodyAttributes)
+        text.append(policyLink(
+            label: ConsentConfiguration.privacyPolicyLabel,
+            url: privacyPolicyContent.isEmpty ? nil : ConsentConfiguration.privacyPolicyLink,
+            attributes: linkAttributes
+        ))
+        text.append(NSAttributedString(string: " \(ConsentConfiguration.and) ", attributes: bodyAttributes))
+        text.append(policyLink(
+            label: ConsentConfiguration.cookiePolicyLabel,
+            url: ConsentConfiguration.cookiePolicyURL == nil ? nil : ConsentConfiguration.cookiePolicyLink,
+            attributes: linkAttributes
+        ))
+        text.append(NSAttributedString(string: ".", attributes: bodyAttributes))
+        return text
+    }
+
+    private func policyLink(label: String, url: URL?, attributes: [NSAttributedString.Key: Any]) -> NSAttributedString {
+        var attributes = attributes
+        if let url = url {
+            attributes[.link] = url
+        }
+        return NSAttributedString(string: label, attributes: attributes)
+    }
+
     /// Category descriptions can contain HTML, so they are rendered as attributed text.
     private func attributedDescription(html: String) -> NSAttributedString {
         let styled = "<style>body { font-family: -apple-system; font-size: 15px; color: \(hexString(of: ConsentColors.categoryDescription)); }</style>\(html)"
@@ -293,12 +377,20 @@ public final class CustomConsentViewController: UIViewController, PrivacyPopupPr
         onlyNecessaryButton.layer.borderColor = secondary.cgColor
     }
 
+    private func updatePrimaryButton() {
+        let title = hasOptionalSelection
+            ? ConsentConfiguration.saveChoicesButton
+            : ConsentConfiguration.acceptAllButton
+        primaryButton.setTitle(title, for: .normal)
+    }
+
     public override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
         guard #available(iOS 13.0, *),
               traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) else { return }
         // CGColor and the parsed HTML don't adapt automatically, so re-resolve them.
         updateBorderColors()
+        introTextView.attributedText = makeIntroText()
         descriptionRows.forEach { row in
             row.label.attributedText = attributedDescription(html: row.html)
         }
@@ -309,6 +401,7 @@ public final class CustomConsentViewController: UIViewController, PrivacyPopupPr
     @objc private func toggleChanged(_ toggle: UISwitch) {
         guard categoryModels.indices.contains(toggle.tag) else { return }
         categoryModels[toggle.tag].selectionDidChange(toggle.isOn)
+        updatePrimaryButton()
     }
 
     /// Accepts the required categories, rejects every optional one, saves and closes.
@@ -316,8 +409,30 @@ public final class CustomConsentViewController: UIViewController, PrivacyPopupPr
         viewModel.rejectAll()
     }
 
-    /// Saves exactly what the user toggled (required categories stay on) and closes.
-    @objc private func saveChoicesTapped() {
-        viewModel.acceptSelected()
+    /// "Accept All" consents to every category; after the user enables an optional category the
+    /// button becomes "Save Choices" and saves exactly what they toggled.
+    @objc private func primaryTapped() {
+        hasOptionalSelection ? viewModel.acceptSelected() : viewModel.acceptAll()
+    }
+
+    private func openPolicy(_ content: String) {
+        guard !content.isEmpty else { return }
+        let policy = PolicyViewController(content: content)
+        policy.modalPresentationStyle = .fullScreen
+        present(policy, animated: true)
+    }
+}
+
+extension CustomConsentViewController: UITextViewDelegate {
+    public func textView(_ textView: UITextView, shouldInteractWith url: URL, in characterRange: NSRange, interaction: UITextItemInteraction) -> Bool {
+        switch url {
+        case ConsentConfiguration.privacyPolicyLink:
+            openPolicy(privacyPolicyContent)
+        case ConsentConfiguration.cookiePolicyLink:
+            ConsentConfiguration.cookiePolicyURL.map { openPolicy($0.absoluteString) }
+        default:
+            return true
+        }
+        return false
     }
 }

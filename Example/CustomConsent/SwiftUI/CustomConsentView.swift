@@ -3,20 +3,13 @@ import MobileConsentsSDK
 
 /// SwiftUI twin of `CustomConsentViewController` — the same design, rendered with SwiftUI.
 /// Present it through `CustomConsentSwiftUIController`, which adapts it to the SDK's
-/// `customViewType` hook. Colors come from ConsentColors.swift, shared with the UIKit version.
+/// `customViewType` hook. Text lives in ConsentConfiguration.swift, colors in
+/// ConsentColors.swift, both shared with the other variants.
 @available(iOS 15.0, *)
 public struct CustomConsentView: View {
 
-    private enum Strings {
-        // Hardcoded to match the design. Replace with the values from
-        // `PrivacyPopUpData` in ConsentScreenState.load(sections:) to use the
-        // texts configured in the dashboard instead.
-        static let title = "Cookie settings"
-        static let onlyNecessary = "Only Necessary"
-        static let saveChoices = "Save choices"
-    }
-
     @ObservedObject var state: ConsentScreenState
+    @State private var policy: PolicyContent?
 
     private let background = Color(uiColor: ConsentColors.background)
     private let titleColor = Color(uiColor: ConsentColors.title)
@@ -31,13 +24,20 @@ public struct CustomConsentView: View {
         ZStack {
             background.ignoresSafeArea()
 
+            // The category list scrolls; the action buttons stay fixed at the bottom.
             VStack(spacing: 0) {
                 ScrollView {
                     // 32pt of vertical spacing between categories instead of divider lines.
                     VStack(alignment: .leading, spacing: 32) {
-                        Text(Strings.title)
-                            .font(.system(size: 24, weight: .bold))
-                            .foregroundColor(titleColor)
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text(ConsentConfiguration.title)
+                                .font(.system(size: 24, weight: .bold))
+                                .foregroundColor(titleColor)
+
+                            PolicyIntroText(privacyPolicy: state.privacyPolicy) { content in
+                                policy = PolicyContent(content: content)
+                            }
+                        }
 
                         ForEach(state.categories) { category in
                             categoryRow(category)
@@ -51,10 +51,10 @@ public struct CustomConsentView: View {
                     .fill(divider)
                     .frame(height: 1)
 
-                // Action buttons pinned to the bottom of the screen.
                 HStack(spacing: 12) {
+                    // Accepts the required categories, rejects every optional one.
                     Button(action: state.onOnlyNecessary) {
-                        Text(Strings.onlyNecessary)
+                        Text(ConsentConfiguration.onlyNecessaryButton)
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(secondary)
                             .frame(maxWidth: .infinity, minHeight: 48)
@@ -64,8 +64,11 @@ public struct CustomConsentView: View {
                             )
                     }
 
-                    Button(action: state.onSaveChoices) {
-                        Text(Strings.saveChoices)
+                    // "Accept All" until the user enables an optional category, then "Save Choices".
+                    Button(action: state.hasOptionalSelection ? state.onSaveChoices : state.onAcceptAll) {
+                        Text(state.hasOptionalSelection
+                             ? ConsentConfiguration.saveChoicesButton
+                             : ConsentConfiguration.acceptAllButton)
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(onAccent)
                             .frame(maxWidth: .infinity, minHeight: 48)
@@ -82,6 +85,9 @@ public struct CustomConsentView: View {
                     .tint(accent)
                     .scaleEffect(1.5)
             }
+        }
+        .fullScreenCover(item: $policy) { policy in
+            PolicyWebView(content: policy.content).ignoresSafeArea()
         }
     }
 

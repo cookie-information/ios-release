@@ -33,6 +33,9 @@
 		CC46202026070001000000B5 /* CustomConsentSwiftUIController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC46202026070001000000A5 /* CustomConsentSwiftUIController.swift */; };
 		CC46202026070001000000B6 /* ConsentStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC46202026070001000000A6 /* ConsentStore.swift */; };
 		CC46202026070001000000B7 /* StandaloneConsentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC46202026070001000000A7 /* StandaloneConsentView.swift */; };
+		CC46202026070001000000B8 /* ConsentConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC46202026070001000000A8 /* ConsentConfiguration.swift */; };
+		CC46202026070001000000B9 /* PolicyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC46202026070001000000A9 /* PolicyViewController.swift */; };
+		CC46202026070001000000BA /* PolicyWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC46202026070001000000AA /* PolicyWebView.swift */; };
 		93BE518F296EB1E5000DA679 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 93BE518E296EB1E5000DA679 /* AppDelegate.m */; };
 		93BE5192296EB1E5000DA679 /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 93BE5191296EB1E5000DA679 /* SceneDelegate.m */; };
 		93BE5195296EB1E5000DA679 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 93BE5194296EB1E5000DA679 /* ViewController.m */; };
@@ -89,6 +92,9 @@
 		CC46202026070001000000A5 /* CustomConsentSwiftUIController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomConsentSwiftUIController.swift; sourceTree = "<group>"; };
 		CC46202026070001000000A6 /* ConsentStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsentStore.swift; sourceTree = "<group>"; };
 		CC46202026070001000000A7 /* StandaloneConsentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandaloneConsentView.swift; sourceTree = "<group>"; };
+		CC46202026070001000000A8 /* ConsentConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsentConfiguration.swift; sourceTree = "<group>"; };
+		CC46202026070001000000A9 /* PolicyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolicyViewController.swift; sourceTree = "<group>"; };
+		CC46202026070001000000AA /* PolicyWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolicyWebView.swift; sourceTree = "<group>"; };
 		93BE518B296EB1E5000DA679 /* ObjC example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ObjC example.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		93BE518D296EB1E5000DA679 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		93BE518E296EB1E5000DA679 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -258,6 +264,9 @@
 			isa = PBXGroup;
 			children = (
 				CC46202026070001000000A1 /* ConsentColors.swift */,
+				CC46202026070001000000A8 /* ConsentConfiguration.swift */,
+				CC46202026070001000000A9 /* PolicyViewController.swift */,
+				CC46202026070001000000AA /* PolicyWebView.swift */,
 				CC46202026070001000000A2 /* CustomConsentViewController.swift */,
 				CC46202026070001000000C2 /* SwiftUI */,
 				CC46202026070001000000C3 /* Standalone */,
@@ -470,6 +479,9 @@
 				CC46202026070001000000B5 /* CustomConsentSwiftUIController.swift in Sources */,
 				CC46202026070001000000B6 /* ConsentStore.swift in Sources */,
 				CC46202026070001000000B7 /* StandaloneConsentView.swift in Sources */,
+				CC46202026070001000000B8 /* ConsentConfiguration.swift in Sources */,
+				CC46202026070001000000B9 /* PolicyViewController.swift in Sources */,
+				CC46202026070001000000BA /* PolicyWebView.swift in Sources */,
 				935E138528F955EB00BAF8E3 /* SavedItemTableViewCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
