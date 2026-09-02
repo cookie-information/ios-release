@@ -25,7 +25,7 @@
                                                              accentColor:UIColor.systemBlueColor
                                                                  fontSet:FontSet.standard
                                                     localizationOverride:@{}
-                                                     enableNetworkLogger:NO];
+                                                     networkLoggingMode:NetworkLoggingModeDisabled];
 
     // Do any additional setup after loading the view.
 }

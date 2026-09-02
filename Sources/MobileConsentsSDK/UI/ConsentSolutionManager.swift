@@ -1,14 +1,14 @@
 import Foundation
 
+@MainActor
 protocol ConsentItemProvider {
     func isConsentItemSelected(id: String) -> Bool
     func isConsentItemRequired(id: String) -> Bool
     func markConsentItem(id: String, asSelected selected: Bool)
 }
 
+@MainActor
 protocol ConsentSolutionManagerProtocol: ConsentItemProvider {
-    var areAllRequiredConsentItemsSelected: Bool { get }
-    var hasRequiredConsentItems: Bool { get }
     var settings: [ConsentItem] { get }
     var localizationOverride: [Locale: LabelText] { get }
     func loadConsentSolutionIfNeeded(completion: @escaping (Result<ConsentSolution, Error>) -> Void)
@@ -18,25 +18,29 @@ protocol ConsentSolutionManagerProtocol: ConsentItemProvider {
     func acceptSelectedConsentItems(completion: @escaping (Error?) -> Void)
 }
 
+struct LoadedConsentContext {
+    let solution: ConsentSolution
+    var selectedConsentItemIDs: Set<String>
+
+    init(
+        solution: ConsentSolution,
+        savedConsents: [UserConsent]
+    ) {
+        self.solution = solution
+        self.selectedConsentItemIDs = Set(
+            savedConsents.filter(\.isSelected).map(\.consentItem.id)
+        )
+    }
+}
+
+@MainActor
 final class ConsentSolutionManager: ConsentSolutionManagerProtocol {
     var localizationOverride: [Locale: LabelText]
     
     static let consentItemSelectionDidChange = Notification.Name(rawValue: "com.cookieinformation.consentItemSelectionDidChange")
-    
-    var areAllRequiredConsentItemsSelected: Bool {
-        guard consentSolution != nil else { return false }
-        return settings
-            .filter(\.required)
-            .map(\.id)
-            .allSatisfy(selectedConsentItemIds.contains)
-    }
-
-    var hasRequiredConsentItems: Bool {
-        settings.contains(where: \.required)
-    }
 
     public var settings: [ConsentItem] {
-        consentSolution?.consentItems.filter { $0.type != .privacyPolicy } ?? []
+        loadedContext?.solution.consentItems.filter { $0.type != .privacyPolicy } ?? []
     }
 
     private var allSettingsItemIds: [String] {
@@ -44,67 +48,96 @@ final class ConsentSolutionManager: ConsentSolutionManagerProtocol {
     }
 
 
-    private let consentSolutionId: String
-    private let mobileConsents: MobileConsentsProtocol
+    private let mobileConsents: ConsentSolutionClient
     private let notificationCenter: NotificationCenter
     private let asyncDispatcher: AsyncDispatcher
     
-    private var consentSolution: ConsentSolution?
-    private var selectedConsentItemIds = Set<String>()
+    private var loadedContext: LoadedConsentContext?
     
     init(
-        consentSolutionId: String,
-        mobileConsents: MobileConsentsProtocol,
+        mobileConsents: ConsentSolutionClient,
         notificationCenter: NotificationCenter = NotificationCenter.default,
-        asyncDispatcher: AsyncDispatcher = DispatchQueue.main,
-        localizationOverride: [Locale: LabelText] = [:]
+        asyncDispatcher: AsyncDispatcher = MainThreadAsyncDispatcher(),
+        localizationOverride: [Locale: LabelText] = [:],
+        loadedContext: LoadedConsentContext? = nil
     ) {
-        self.consentSolutionId = consentSolutionId
         self.mobileConsents = mobileConsents
         self.notificationCenter = notificationCenter
         self.asyncDispatcher = asyncDispatcher
         self.localizationOverride = localizationOverride
+        self.loadedContext = loadedContext
     }
     
     func loadConsentSolutionIfNeeded(completion: @escaping (Result<ConsentSolution, Error>) -> Void) {
-        if let consentSolution = consentSolution {
-            completion(.success(consentSolution))
-            
+        if let loadedContext {
+            completion(.success(loadedContext.solution))
             return
         }
         
         mobileConsents.fetchConsentSolution { [weak self, asyncDispatcher] result in
-            asyncDispatcher.async {
-                if case .success(let solution) = result {
-                    self?.consentSolution = solution
-                    let givenConsentIds = self?.mobileConsents.getSavedConsents().filter(\.isSelected).map(\.consentItem.id) ?? []
-                    self?.selectedConsentItemIds = Set(givenConsentIds)
+            switch result {
+            case let .success(solution):
+                self?.loadSavedConsents(for: solution) { result in
+                    asyncDispatcher.async {
+                        completion(result)
+                    }
                 }
-                completion(result)
+            case let .failure(error):
+                asyncDispatcher.async {
+                    completion(.failure(error))
+                }
             }
         }
     }
-    
+
+    private func loadSavedConsents(
+        for solution: ConsentSolution,
+        completion: @escaping (Result<ConsentSolution, Error>) -> Void
+    ) {
+        Task<Void, Never>(
+            name: "MobileConsentsSDK.ConsentSolutionManager.loadSavedConsents"
+        ) { @MainActor [weak self] in
+            guard let self else {
+                return
+            }
+            do {
+                let consents = try await mobileConsents.loadSavedConsents()
+                self.loadedContext = LoadedConsentContext(
+                    solution: solution,
+                    savedConsents: consents
+                )
+                completion(.success(solution))
+            } catch {
+                completion(.failure(error))
+            }
+        }
+    }
+
     func isConsentItemSelected(id: String) -> Bool {
-        selectedConsentItemIds.contains(id)
+        loadedContext?.selectedConsentItemIDs.contains(id) ?? false
     }
     
     func isConsentItemRequired(id: String) -> Bool {
-        consentSolution?.consentItems.first { $0.id == id}?.required ?? false
+        loadedContext?.solution.consentItems.first { $0.id == id}?.required ?? false
     }
     
     func markConsentItem(id: String, asSelected selected: Bool) {
         if selected {
-            selectedConsentItemIds.insert(id)
+            loadedContext?.selectedConsentItemIDs.insert(id)
         } else {
-            selectedConsentItemIds.remove(id)
+            loadedContext?.selectedConsentItemIDs.remove(id)
         }
         
         postConsentItemSelectionDidChangeNotification()
     }
     
     func rejectAllConsentItems(completion: @escaping (Error?) -> Void) {
-        selectedConsentItemIds.removeAll()
+        guard loadedContext != nil else {
+            completeWithConsentSolutionNotLoaded(completion: completion)
+            return
+        }
+
+        loadedContext?.selectedConsentItemIDs.removeAll()
         
         postConsentItemSelectionDidChangeNotification()
         
@@ -112,23 +145,37 @@ final class ConsentSolutionManager: ConsentSolutionManagerProtocol {
     }
     
     func acceptAllConsentItems(completion: @escaping (Error?) -> Void) {
-        
-        selectedConsentItemIds.formUnion(allSettingsItemIds)
+        guard loadedContext != nil else {
+            completeWithConsentSolutionNotLoaded(completion: completion)
+            return
+        }
+
+        let consentItemIDs = allSettingsItemIds
+        loadedContext?.selectedConsentItemIDs.formUnion(consentItemIDs)
         
         postConsentItemSelectionDidChangeNotification()
         
-        postConsent(selectedConsentItemIds: selectedConsentItemIds, completion: completion)
+        postConsent(
+            selectedConsentItemIds: loadedContext?.selectedConsentItemIDs ?? [],
+            completion: completion
+        )
     }
     
     func acceptSelectedConsentItems(completion: @escaping (Error?) -> Void) {
-        postConsent(selectedConsentItemIds: selectedConsentItemIds, completion: completion)
+        guard let loadedContext else {
+            completeWithConsentSolutionNotLoaded(completion: completion)
+            return
+        }
+
+        postConsent(
+            selectedConsentItemIds: loadedContext.selectedConsentItemIDs,
+            completion: completion
+        )
     }
     
     private func postConsent(selectedConsentItemIds: Set<String>, completion: @escaping (Error?) -> Void) {
-        guard let consentSolution = consentSolution else {
-            asyncDispatcher.async {
-                completion(ConsentSolutionManagerError.consentSolutionNotLoaded)
-            }
+        guard let consentSolution = loadedContext?.solution else {
+            completeWithConsentSolutionNotLoaded(completion: completion)
             return
         }
         
@@ -141,6 +188,13 @@ final class ConsentSolutionManager: ConsentSolutionManagerProtocol {
             asyncDispatcher.async {
                 completion(error)
             }
+        }
+
+    }
+
+    private func completeWithConsentSolutionNotLoaded(completion: @escaping (Error?) -> Void) {
+        asyncDispatcher.async {
+            completion(ConsentSolutionManagerError.consentSolutionNotLoaded)
         }
     }
     

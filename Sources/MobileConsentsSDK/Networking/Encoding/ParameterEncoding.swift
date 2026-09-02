@@ -2,10 +2,6 @@ import Foundation
 
 public typealias Parameters = [String: Any]
 
-protocol ParameterEncoder {
-    func encode(urlRequest: inout URLRequest, with parameters: Parameters) throws
-}
-
 public enum NetworkError: String, Error {
     case parametersMissing = "Parameters are missing."
     case encodingFailed = "Parameter encoding failed."

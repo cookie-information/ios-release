@@ -1,5 +1,6 @@
 import UIKit
 
+@MainActor
 enum StyleConstants {
     private static let fontSize = { UIFontMetrics(forTextStyle: .body).scaledValue(for: 13) }
 

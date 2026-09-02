@@ -1,5 +1,5 @@
 public struct ConsentSolution: Decodable, Equatable {
-    internal init(id: String, versionId: String, templateTexts: TemplateTexts, consentItems: [ConsentItem]) {
+    init(id: String, versionId: String, templateTexts: TemplateTexts, consentItems: [ConsentItem]) {
         self.id = id
         self.versionId = versionId
         self.templateTexts = templateTexts
@@ -27,8 +27,6 @@ public struct ConsentSolution: Decodable, Equatable {
     enum CodingKeys: String, CodingKey {
         case id = "universalConsentSolutionId"
         case versionId = "universalConsentSolutionVersionId"
-        case title
-        case description
         case templateTexts
         case consentItems = "universalConsentItems"
     }

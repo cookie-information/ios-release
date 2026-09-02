@@ -43,7 +43,7 @@ public class PrivacyPolicyDetail: UIViewController {
     
     private lazy var deviceInfoLabel: UILabel = {
         let label = UILabel()
-        label.text = "Device identifier:\n\(LocalStorageManager().userId)"
+        label.text = "Device identifier:\n\(ConsentStore.defaultUserID())"
         label.numberOfLines = 2
         label.font = UIFontMetrics(forTextStyle: .body).scaledFont(for: .regular(size: 12))
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -121,7 +121,7 @@ public class PrivacyPolicyDetail: UIViewController {
     }
     
     @objc func displayDeviceId() {
-        let id = LocalStorageManager().userId
+        let id = ConsentStore.defaultUserID()
         let alert = UIAlertController(title: "Device Identifier",
                                       message: id,
                                       preferredStyle: .actionSheet)

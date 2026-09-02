@@ -10,58 +10,20 @@ final class MobileConsentSolutionViewModel {
                                                         title: "Data privacy",
                                                         readMoreScreenHeader: "Data privacy explained"
                                                        )],
-                                                       enableNetworkLogger: true)
+                                                       networkLoggingMode: .redactedRequestsAndResponses)
     
     
     
-    private var selectedItems: [ConsentItem] = []
-    private var language: String?
     private var clientId = "40dbe5a7-1c01-463a-bb08-a76970c0efa0"
     private var clientSecret = "68cbf024407a20b8df4aecc3d9937f43c6e83169dafcb38b8d18296b515cc0d5f8bca8165d615caa4d12e236192851e9c5852a07319428562af8f920293bc1db"
     private var solutionId = "4113ab88-4980-4429-b2d1-3454cc81197b"
-    
-    private var items: [ConsentItem] {
-        return consentSolution?.consentItems ?? []
-    }
-    
-    private var sectionTypes: [MobileConsentsSolutionSectionType] {
-        guard consentSolution != nil else { return [] }
-        
-        var sectionTypes: [MobileConsentsSolutionSectionType] = [.info]
-        if !items.isEmpty {
-            sectionTypes.append(.items)
-        }
-        return sectionTypes
-    }
-    var consentSolution: ConsentSolution?
     
     var savedConsents: [UserConsent] {
         return mobileConsentsSDK.getSavedConsents()
     }
     
-    private var consent: Consent? {
-        guard let consentSolution = consentSolution, let language = language else { return nil }
-        
-        let customData = ["email": "mobile@cookieinformation.com", "device_id": "824c259c-7bf5-4d2a-81bf-22c09af31261"]
-        var consent = Consent(consentSolutionId: consentSolution.id, consentSolutionVersionId: consentSolution.versionId, customData: customData, userConsents: [UserConsent]())
-        
-        items.forEach { item in
-            let selected = selectedItems.contains(where: { $0.id == item.id })
-            let purpose = ProcessingPurpose(consentItemId: item.id, consentGiven: selected, language: language)
-            consent.addProcessingPurpose(purpose)
-        }
-        
-        return consent
-    }
-    
-    
-    
-    
-    func isItemSelected(_ item: ConsentItem) -> Bool {
-        return selectedItems.contains(where: { $0.id == item.id })
-    }
-    
-    func showPrivacyPopUp(style: PrivacyPopupStyle = .standard) {
+    @MainActor
+    func showPrivacyPopUp(style: PrivacyPopupStyle) {
         // Display the popup and provide a closure for handling the user constent.
         // This completion closure is the place to display
         mobileConsentsSDK = MobileConsents(clientID: clientId,
@@ -72,7 +34,7 @@ final class MobileConsentSolutionViewModel {
                                            localizationOverride: [Locale.init(identifier: "en"): LabelText(
                                             title: "Data privacy"
                                            )],
-                                           enableNetworkLogger: true
+                                           networkLoggingMode: .redactedRequestsAndResponses
         )
         
         mobileConsentsSDK.showPrivacyPopUp(customViewType: style.customController) { settings in
@@ -123,6 +85,7 @@ final class MobileConsentSolutionViewModel {
     
 }
 
+@MainActor
 struct PrivacyPopupStyle {
     var accentColor: UIColor
     var fontSet: FontSet

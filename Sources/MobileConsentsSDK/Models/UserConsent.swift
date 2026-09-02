@@ -18,7 +18,7 @@ public class UserConsent: NSObject, Codable {
     public let isSelected: Bool
 }
 
-public enum ConsentPurpose: Codable {
+public enum ConsentPurpose: Codable, Sendable {
     case necessary
     case marketing
     case functional

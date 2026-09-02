@@ -1,10 +1,11 @@
 import XCTest
 @testable import MobileConsentsSDK
 
+@MainActor
 final class ConsentSolutionManagerTests: XCTestCase {
     private var sut: ConsentSolutionManager!
     private var notificationCenter: NotificationCenter!
-    private var mobileConsents: MobileConsentsProtocolMock!
+    private var mobileConsents: ConsentSolutionClientMock!
 
     // Incremented from the notification observer; posts always happen on the main thread.
     private var notificationCount = 0
@@ -15,10 +16,9 @@ final class ConsentSolutionManagerTests: XCTestCase {
 
     override func setUp() async throws {
         notificationCenter = NotificationCenter()
-        mobileConsents = MobileConsentsProtocolMock()
+        mobileConsents = ConsentSolutionClientMock()
 
         sut = ConsentSolutionManager(
-            consentSolutionId: "TestConsentSolutionId",
             mobileConsents: mobileConsents,
             notificationCenter: notificationCenter,
             asyncDispatcher: DummyAsyncDispatcher()
@@ -39,80 +39,115 @@ final class ConsentSolutionManagerTests: XCTestCase {
         notificationCenter.removeObserver(self)
     }
 
-    func test_areAllRequiredConsentItemsSelectedIsFalse_whenConsentSolutionIsNotLoaded() {
-        XCTAssertFalse(sut.areAllRequiredConsentItemsSelected)
-    }
-
-    func test_hasRequiredConsentItemsIsFalse_whenConsentSolutionIsNotLoaded() {
-        XCTAssertFalse(sut.hasRequiredConsentItems)
-    }
-
-    func test_allRequiredConsentItemsAreSelected_whenLoadedSolutionHasNoRequiredConsentItems() {
-        loadConsentSolution(consentSolution(consentItemConfigs: [(false, .functional), (false, .functional)]))
-
-        XCTAssertTrue(sut.areAllRequiredConsentItemsSelected)
-    }
-
-    func test_hasNoRequiredConsentItems_whenLoadedSolutionHasNoRequiredConsentItems() {
-        loadConsentSolution(consentSolution(consentItemConfigs: [(false, .functional), (false, .functional)]))
-
-        XCTAssertFalse(sut.hasRequiredConsentItems)
-    }
-
-    func test_allRequiredConsentItemsAreSelected_whenLoadedSolutionHasOnlyRequiredConsentItemsOfTypePrivacyPolicy() {
-        loadConsentSolution(consentSolution(consentItemConfigs: [(false, .functional), (true, .privacyPolicy)]))
-
-        XCTAssertTrue(sut.areAllRequiredConsentItemsSelected)
-    }
-
-    func test_hasNoRequiredConsentItems_whenLoadedSolutionHasRequiredConsentItemsOfTypePrivacyPolicy() {
-        loadConsentSolution(consentSolution(consentItemConfigs: [(false, .functional), (true, .privacyPolicy)]))
-
-        XCTAssertFalse(sut.hasRequiredConsentItems)
-    }
-
-    func test_allRequiredConsentItemsAreNotSelected_whenLoadedSolutionHasRequiredConsentItemsOfTypeFunctional() {
-        loadConsentSolution(consentSolution(consentItemConfigs: [(true, .functional)]))
-
-        XCTAssertFalse(sut.areAllRequiredConsentItemsSelected)
-    }
-
-    func test_hasRequiredConsentItems_whenLoadedSolutionHasRequiredConsentItemsOfTypeFunctional() {
-        loadConsentSolution(consentSolution(consentItemConfigs: [(true, .functional)]))
-
-        XCTAssertTrue(sut.hasRequiredConsentItems)
-    }
-
-    func test_consentItemsSavedAsGivenAreAlreadyMarkedAsSelected_afterLoadingContentSolution() {
+    func test_consentItemsSavedAsGivenAreAlreadyMarkedAsSelected_afterLoadingContentSolution() async {
         mobileConsents.savedConsents = [
             userConsent(consentItemId: "0", isSelected: true),
             userConsent(consentItemId: "1", isSelected: false),
             userConsent(consentItemId: "2", isSelected: true)
         ]
 
-        loadConsentSolution(consentSolution(consentItemConfigs: [(true, .functional), (true, .functional), (false, .functional)]))
+        await loadConsentSolution(consentSolution(consentItemConfigs: [(true, .functional), (true, .functional), (false, .functional)]))
 
         XCTAssertTrue(sut.isConsentItemSelected(id: "0"))
         XCTAssertFalse(sut.isConsentItemSelected(id: "1"))
         XCTAssertTrue(sut.isConsentItemSelected(id: "2"))
     }
 
-    func test_consentItemIsNotSelected_afterLoadingConsentSolution() {
-        loadConsentSolution(consentSolution(consentItemConfigs: [(true, .functional)]))
+    func test_consentItemIsNotSelected_afterLoadingConsentSolution() async {
+        await loadConsentSolution(consentSolution(consentItemConfigs: [(true, .functional)]))
 
         XCTAssertFalse(sut.isConsentItemSelected(id: "0"))
     }
 
-    func test_consentItemIsSelected_afterMarkingItAsSelected() {
-        loadConsentSolution(consentSolution(consentItemConfigs: [(true, .functional)]))
+    func test_loadConsentSolutionIfNeeded_whenSolutionIsCached_callsCompletionInlineWithoutRefetching() async {
+        let solution = consentSolution(consentItemConfigs: [(true, .functional)])
+        mobileConsents.fetchConsentSolutionResult = .success(solution)
+
+        await loadConsentSolution(solution)
+        XCTAssertEqual(mobileConsents.fetchConsentCallCount, 1)
+
+        var completionWasCalled = false
+        sut.loadConsentSolutionIfNeeded { result in
+            completionWasCalled = true
+            guard case .success(let receivedSolution) = result else {
+                XCTFail("Expected the cached solution")
+                return
+            }
+            XCTAssertEqual(receivedSolution, solution)
+        }
+
+        XCTAssertTrue(completionWasCalled, "The cached path is synchronous in 1.6")
+        XCTAssertEqual(mobileConsents.fetchConsentCallCount, 1, "A cached solution must not refetch")
+    }
+
+    func test_loadConsentSolutionIfNeeded_whenInitializedWithContext_doesNotLoadAgain() async {
+        let solution = consentSolution(consentItemConfigs: [(true, .functional)])
+        let savedConsent = userConsent(consentItemId: "0", isSelected: true)
+        sut = ConsentSolutionManager(
+            mobileConsents: mobileConsents,
+            notificationCenter: notificationCenter,
+            asyncDispatcher: DummyAsyncDispatcher(),
+            loadedContext: LoadedConsentContext(
+                solution: solution,
+                savedConsents: [savedConsent]
+            )
+        )
+
+        let completion = expectation(description: "Cached solution loaded")
+        var receivedSolution: ConsentSolution?
+        sut.loadConsentSolutionIfNeeded { result in
+            receivedSolution = try? result.get()
+            completion.fulfill()
+        }
+        await fulfillment(of: [completion], timeout: 2)
+
+        XCTAssertEqual(receivedSolution, solution)
+        XCTAssertEqual(mobileConsents.fetchConsentCallCount, 0)
+        XCTAssertEqual(mobileConsents.loadSavedConsentsCallCount, 0)
+        XCTAssertTrue(sut.isConsentItemSelected(id: "0"))
+    }
+
+    func test_loadConsentSolutionIfNeeded_whenFetchingNetworkSolution_defersCompletionToDispatcher() async {
+        let dispatcher = RecordingAsyncDispatcher()
+        sut = ConsentSolutionManager(
+            mobileConsents: mobileConsents,
+            notificationCenter: notificationCenter,
+            asyncDispatcher: dispatcher
+        )
+        let solution = consentSolution(consentItemConfigs: [(true, .functional)])
+        mobileConsents.fetchConsentSolutionResult = .success(solution)
+        let savedConsentsLoaded = expectation(description: "Saved consents loaded")
+        mobileConsents.onLoadSavedConsents = { savedConsentsLoaded.fulfill() }
+
+        var completionWasCalled = false
+        sut.loadConsentSolutionIfNeeded { result in
+            completionWasCalled = true
+            guard case .success = result else {
+                XCTFail("Expected the fetched solution")
+                return
+            }
+        }
+
+        XCTAssertFalse(completionWasCalled, "The network path must not complete inline")
+        await fulfillment(of: [savedConsentsLoaded], timeout: 2)
+        XCTAssertEqual(dispatcher.pendingWorkCount, 1)
+
+        dispatcher.runNext()
+
+        XCTAssertTrue(completionWasCalled)
+        XCTAssertEqual(mobileConsents.fetchConsentCallCount, 1)
+    }
+
+    func test_consentItemIsSelected_afterMarkingItAsSelected() async {
+        await loadConsentSolution(consentSolution(consentItemConfigs: [(true, .functional)]))
         sut.markConsentItem(id: "0", asSelected: true)
 
         XCTAssertTrue(sut.isConsentItemSelected(id: "0"))
         XCTAssertEqual(notificationCount, 1)
     }
 
-    func test_consentItemIsNotSelected_afterMarkingItAsNotSelected() {
-        loadConsentSolution(consentSolution(consentItemConfigs: [(true, .functional)]))
+    func test_consentItemIsNotSelected_afterMarkingItAsNotSelected() async {
+        await loadConsentSolution(consentSolution(consentItemConfigs: [(true, .functional)]))
         sut.markConsentItem(id: "0", asSelected: true)
         sut.markConsentItem(id: "0", asSelected: false)
 
@@ -120,8 +155,8 @@ final class ConsentSolutionManagerTests: XCTestCase {
         XCTAssertEqual(notificationCount, 2)
     }
 
-    func test_acceptAllConsentItemsMarksAllConsentsAsSelected() {
-        loadConsentSolution(consentSolution(consentItemConfigs: [(true, .functional), (true, .functional)]))
+    func test_acceptAllConsentItemsMarksAllConsentsAsSelected() async {
+        await loadConsentSolution(consentSolution(consentItemConfigs: [(true, .functional), (true, .functional)]))
 
         sut.acceptAllConsentItems { _ in }
 
@@ -131,8 +166,8 @@ final class ConsentSolutionManagerTests: XCTestCase {
         XCTAssertEqual(notificationCount, 1)
     }
 
-    func test_acceptAllConsentItemsPostsAllNonPrivacyPolicyConsentsAsGiven() throws {
-        loadConsentSolution(consentSolution(consentItemConfigs: [(true, .functional), (false, .functional), (true, .privacyPolicy)]))
+    func test_acceptAllConsentItemsPostsAllNonPrivacyPolicyConsentsAsGiven() async throws {
+        await loadConsentSolution(consentSolution(consentItemConfigs: [(true, .functional), (false, .functional), (true, .privacyPolicy)]))
 
         sut.acceptAllConsentItems { _ in }
 
@@ -144,8 +179,8 @@ final class ConsentSolutionManagerTests: XCTestCase {
         XCTAssertNil(processingPurposes.first { $0.consentItemId == "2" })
     }
 
-    func test_acceptSelectedConsentItemsPostsOnlySelectedAndRequiredConsentsAsGiven() throws {
-        loadConsentSolution(consentSolution(consentItemConfigs: [(true, .functional), (false, .functional), (true, .privacyPolicy)]))
+    func test_acceptSelectedConsentItemsPostsOnlySelectedAndRequiredConsentsAsGiven() async throws {
+        await loadConsentSolution(consentSolution(consentItemConfigs: [(true, .functional), (false, .functional), (true, .privacyPolicy)]))
 
         sut.markConsentItem(id: "0", asSelected: true)
 
@@ -158,8 +193,33 @@ final class ConsentSolutionManagerTests: XCTestCase {
         XCTAssertNil(processingPurposes.first { $0.consentItemId == "2" })
     }
 
-    func test_rejectAllConsentItemsMarksAllConsentsAsNotSelected() {
-        loadConsentSolution(consentSolution(consentItemConfigs: [(true, .functional), (true, .functional)]))
+    func test_acceptSelectedConsentItemsCarriesSavedChoicesAndDefaultsNewItemsToNotGiven() async throws {
+        mobileConsents.savedConsents = [
+            userConsent(consentItemId: "0", isSelected: true),
+            userConsent(consentItemId: "1", isSelected: false),
+        ]
+        await loadConsentSolution(
+            consentSolution(
+                consentItemConfigs: [
+                    (false, .functional),
+                    (false, .functional),
+                    (false, .functional),
+                    (true, .functional),
+                ]
+            )
+        )
+
+        sut.acceptSelectedConsentItems { _ in }
+
+        let processingPurposes = try XCTUnwrap(mobileConsents.postedConsents?.processingPurposes)
+        XCTAssertTrue(processingPurposes.first { $0.consentItemId == "0" }?.consentGiven ?? false)
+        XCTAssertFalse(processingPurposes.first { $0.consentItemId == "1" }?.consentGiven ?? true)
+        XCTAssertFalse(processingPurposes.first { $0.consentItemId == "2" }?.consentGiven ?? true)
+        XCTAssertTrue(processingPurposes.first { $0.consentItemId == "3" }?.consentGiven ?? false)
+    }
+
+    func test_rejectAllConsentItemsMarksAllConsentsAsNotSelected() async {
+        await loadConsentSolution(consentSolution(consentItemConfigs: [(true, .functional), (true, .functional)]))
 
         sut.markConsentItem(id: "0", asSelected: false)
         sut.markConsentItem(id: "1", asSelected: false)
@@ -172,8 +232,8 @@ final class ConsentSolutionManagerTests: XCTestCase {
         XCTAssertEqual(notificationCount, 3)
     }
 
-    func test_rejectAllConsentItemsPostsNonRequiredConsentsAsNotGiven() throws {
-        loadConsentSolution(consentSolution(consentItemConfigs: [(false, .functional), (false, .functional), (true, .privacyPolicy)]))
+    func test_rejectAllConsentItemsPostsNonRequiredConsentsAsNotGiven() async throws {
+        await loadConsentSolution(consentSolution(consentItemConfigs: [(false, .functional), (false, .functional), (true, .privacyPolicy)]))
 
         sut.markConsentItem(id: "0", asSelected: true) // Mark some consent as selected to check if it is not posted
 
@@ -187,34 +247,52 @@ final class ConsentSolutionManagerTests: XCTestCase {
     }
 
     func test_postingConsentBeforeConsentSolutionIsLoaded_completesWithError() {
-        // No consent solution has been loaded, so the completion must still fire
-        // (with an error) instead of hanging the pop-up spinner forever.
-        let receivedError = Ref<Error?>(nil)
+        var receivedError: Error?
 
         sut.acceptSelectedConsentItems { error in
-            receivedError.value = error
+            receivedError = error
         }
 
-        XCTAssertTrue(receivedError.value is ConsentSolutionManagerError)
+        XCTAssertTrue(receivedError is ConsentSolutionManagerError)
         XCTAssertNil(mobileConsents.postedConsents, "Nothing should be posted when there is no consent solution")
     }
 
-    private func loadConsentSolution(_ consentSolution: ConsentSolution) {
+    func test_acceptAllConsentItemsBeforeConsentSolutionIsLoadedDoesNotCreateSubmission() {
+        sut.acceptAllConsentItems { _ in }
+
+        XCTAssertNil(mobileConsents.postedConsents)
+    }
+
+    func test_rejectAllConsentItemsBeforeConsentSolutionIsLoadedDoesNotCreateSubmission() {
+        sut.rejectAllConsentItems { _ in }
+
+        XCTAssertNil(mobileConsents.postedConsents)
+    }
+
+    private func loadConsentSolution(_ consentSolution: ConsentSolution) async {
         mobileConsents.fetchConsentSolutionResult = .success(consentSolution)
 
-        sut.loadConsentSolutionIfNeeded { _ in }
+        await withCheckedContinuation { continuation in
+            sut.loadConsentSolutionIfNeeded { _ in
+                continuation.resume()
+            }
+        }
     }
 
 }
 
-private final class MobileConsentsProtocolMock: MobileConsentsProtocol {
+private final class ConsentSolutionClientMock: ConsentSolutionClient {
     var fetchConsentSolutionResult: Result<ConsentSolution, Error>!
     var postConsentResult: Error?
 
+    private(set) var fetchConsentCallCount = 0
+    private(set) var loadSavedConsentsCallCount = 0
     var postedConsents: Consent?
     var savedConsents = [UserConsent]()
+    var onLoadSavedConsents: (() -> Void)?
 
     func fetchConsentSolution(completion: @escaping (Result<ConsentSolution, Error>) -> Void) {
+        fetchConsentCallCount += 1
         completion(fetchConsentSolutionResult)
     }
 
@@ -223,8 +301,10 @@ private final class MobileConsentsProtocolMock: MobileConsentsProtocol {
         completion(postConsentResult)
     }
 
-    func getSavedConsents() -> [UserConsent] {
-        savedConsents
+    func loadSavedConsents() async throws -> [UserConsent] {
+        loadSavedConsentsCallCount += 1
+        onLoadSavedConsents?()
+        return savedConsents
     }
 }
 
@@ -234,3 +314,19 @@ struct DummyAsyncDispatcher: AsyncDispatcher {
     }
 }
 
+private final class RecordingAsyncDispatcher: AsyncDispatcher {
+    private var pendingWork = [() -> Void]()
+
+    var pendingWorkCount: Int {
+        pendingWork.count
+    }
+
+    func async(execute work: @escaping () -> Void) {
+        pendingWork.append(work)
+    }
+
+    func runNext() {
+        precondition(!pendingWork.isEmpty)
+        pendingWork.removeFirst()()
+    }
+}

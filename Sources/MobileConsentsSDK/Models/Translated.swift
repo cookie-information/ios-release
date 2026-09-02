@@ -33,3 +33,5 @@ public struct Translated<T: Translation & Codable & Equatable>: Codable, Equatab
         translation(with: primaryLanguage) ?? translations.first!
     }
 }
+
+extension Translated: Sendable where T: Sendable {}

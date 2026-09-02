@@ -1,7 +1,7 @@
 import Foundation
 // defining the `module` bundle for cocoapods, but not for SPM
 #if !SWIFT_PACKAGE
-internal extension Bundle {
+extension Bundle {
     static var module:Bundle {
         
         let podBundle = Bundle(for: MobileConsents.self)

@@ -78,15 +78,6 @@ final class SwitchTableViewCell: BaseTableViewCell {
         
     }
     
-    func setText(_ text: String, isRequired: Bool) {
-        
-    }
-    
-    
-    func setValue(_ value: Bool) {
-        uiSwitch.isOn = value
-    }
-    
     private func setup() {
         accessibilityElements = [titleView, uiSwitch]
         selectionStyle = .none
@@ -127,7 +118,7 @@ final class SwitchTableViewCell: BaseTableViewCell {
 }
 
 
-internal extension String {
+extension String {
     var containsHtml: Bool {
         let range = NSRange(location: 0, length: self.utf16.count)
         let regex = try! NSRegularExpression(pattern: #"</?\w+((\s+\w+(\s*=\s*(?:".*?"|'.*?'|[^'">\s]+))?)+\s*|\s*)/?>"#)

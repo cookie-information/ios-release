@@ -1,5 +1,6 @@
 import UIKit
 
+@MainActor
 public final class PopUpConsentViewModel: SwitchCellViewModel {
     public var fontSet: FontSet
     public var accentColor: UIColor
@@ -12,9 +13,7 @@ public final class PopUpConsentViewModel: SwitchCellViewModel {
     
     public let id: String
     private let consentItemProvider: ConsentItemProvider
-    private let notificationCenter: NotificationCenter
-    
-    private var observationToken: Any?
+    private var notificationObserver: MainThreadNotificationObserver?
     
     init(
         id: String,
@@ -31,22 +30,14 @@ public final class PopUpConsentViewModel: SwitchCellViewModel {
         self.description = description
         self.isRequired = isRequired
         self.consentItemProvider = consentItemProvider
-        self.notificationCenter = notificationCenter
         self.accentColor = accentColor
         self.fontSet = fontSet
-        observationToken = notificationCenter.addObserver(
-            forName: ConsentSolutionManager.consentItemSelectionDidChange,
-            object: nil,
-            queue: nil
-        ) { [weak self] _ in
-            guard let self = self else { return }
+        notificationObserver = MainThreadNotificationObserver(
+            center: notificationCenter,
+            name: ConsentSolutionManager.consentItemSelectionDidChange
+        ) { [weak self] in
+            guard let self else { return }
             self.onUpdate?(self)
-        }
-    }
-    
-    deinit {
-        if let observationToken = observationToken {
-            notificationCenter.removeObserver(observationToken)
         }
     }
     
@@ -55,7 +46,8 @@ public final class PopUpConsentViewModel: SwitchCellViewModel {
     }
 }
 
-public final class PopUpConsentsSection: Section {
+public final class PopUpConsentsSection: @MainActor Section {
+    @MainActor
     public static func registerCells(in tableView: UITableView) {
         tableView.register(SwitchTableViewCell.self)
     }
@@ -68,6 +60,7 @@ public final class PopUpConsentsSection: Section {
     
     public var numberOfCells: Int { viewModels.count }
     
+    @MainActor
     public func cell(for indexPath: IndexPath, in tableView: UITableView) -> UITableViewCell {
         let cell: SwitchTableViewCell = tableView.dequeueReusableCell(for: indexPath)
         let viewModel = viewModels[indexPath.row]
