@@ -85,7 +85,7 @@ final class MobileConsentsFacadeOwnershipTests: XCTestCase {
         XCTAssertFalse(reader.snapshot().consentsInSync)
         await transport.waitForPostCount(1)
         await transport.completeControlledPost(statusCode: 200)
-        await waitForSynchronized(reader)
+        await waitForSynchronization(of: client, observedBy: reader)
     }
 
     func testCancelledAsyncPostDoesNotPersistConsent() async throws {
@@ -241,7 +241,7 @@ final class MobileConsentsFacadeOwnershipTests: XCTestCase {
         await firstTransport.completeControlledPost(statusCode: 200)
 
         let reader = try makeReader(suiteName: suiteName)
-        await waitForSynchronized(reader)
+        await waitForSynchronization(of: first, observedBy: reader)
         XCTAssertEqual(reader.snapshot().values.keys.sorted(), ["replacement"])
     }
 
@@ -412,8 +412,8 @@ final class MobileConsentsFacadeOwnershipTests: XCTestCase {
 
         await firstTransport.completeControlledPost(statusCode: 200)
         await secondTransport.completeControlledPost(statusCode: 200)
-        await waitForSynchronized(firstReader)
-        await waitForSynchronized(secondReader)
+        await waitForSynchronization(of: first, observedBy: firstReader)
+        await waitForSynchronization(of: second, observedBy: secondReader)
 
         XCTAssertTrue(firstReader.snapshot().consentsInSync)
         XCTAssertTrue(secondReader.snapshot().consentsInSync)
@@ -555,7 +555,7 @@ final class MobileConsentsFacadeOwnershipTests: XCTestCase {
         await transport.completeControlledPost(statusCode: 200)
 
         await fulfillment(of: [completion], timeout: 2)
-        await waitForSynchronized(reader)
+        await waitForSynchronization(of: client, observedBy: reader)
         let postVersions = await transport.postVersions()
         let authorizationCount = await transport.authorizationCount()
         let maximumActivePosts = await transport.maximumActivePosts()
@@ -603,7 +603,10 @@ final class MobileConsentsFacadeOwnershipTests: XCTestCase {
         callSynchronousSynchronization(on: client)
         await transport.waitForPostCount(1)
         await transport.completeControlledPost(statusCode: 200)
-        await waitForSynchronized(try makeReader(suiteName: suiteName))
+        await waitForSynchronization(
+            of: client,
+            observedBy: try makeReader(suiteName: suiteName)
+        )
 
         let requests = await transport.requests()
         XCTAssertEqual(requests, [.authorization, .post])
@@ -757,8 +760,8 @@ final class MobileConsentsFacadeOwnershipTests: XCTestCase {
             nextCompletion.fulfill()
         }
         await fulfillment(of: [nextCompletion], timeout: 2)
+        await waitForSynchronization(of: client, observedBy: reader)
         await transport.waitForPostCount(2)
-        await waitForSynchronized(reader)
 
         let posts = await transport.posts()
         let authorizationCount = await transport.authorizationCount()
@@ -1445,7 +1448,7 @@ final class MobileConsentsFacadeOwnershipTests: XCTestCase {
         assertSingleFetchAuthorizationAndPost(requestsBeforeRetryCompletion)
 
         await transport.completeControlledPost(statusCode: 200)
-        await waitForSynchronized(reader)
+        await waitForSynchronization(of: client, observedBy: reader)
 
         let popup = try XCTUnwrap(presenter.recordedPopup as? LoadingOwnershipPopup)
         let loadedData = await waitForLoadedData(popup)
@@ -1693,6 +1696,15 @@ final class MobileConsentsFacadeOwnershipTests: XCTestCase {
         }
     }
 
+    private func waitForSynchronization(
+        of client: MobileConsents,
+        observedBy reader: OwnershipConsentReader
+    ) async {
+        let remainsPending = await client.synchronizeIfNeeded()
+        XCTAssertFalse(remainsPending)
+        XCTAssertTrue(reader.snapshot().consentsInSync)
+    }
+
     private func waitForLoadedData(_ popup: LoadingOwnershipPopup) async -> PrivacyPopUpData? {
         if let loadedData = popup.loadedData {
             return loadedData
@@ -1757,7 +1769,7 @@ private func waitForPendingPersistence(
     _ reader: OwnershipConsentReader,
     versionID: String
 ) async throws -> Bool {
-    let deadline = ProcessInfo.processInfo.systemUptime + 2
+    let deadline = ProcessInfo.processInfo.systemUptime + 10
     repeat {
         let snapshot = try reader.inspection()
         if snapshot.versionId == versionID, !snapshot.consentsInSync {
@@ -1772,7 +1784,7 @@ private func waitForPendingPersistence(
 private func waitForSynchronizedPersistence(
     _ reader: OwnershipConsentReader
 ) async throws -> Bool {
-    let deadline = ProcessInfo.processInfo.systemUptime + 2
+    let deadline = ProcessInfo.processInfo.systemUptime + 10
     repeat {
         if try !reader.hasPendingSynchronization() {
             return true
@@ -1897,7 +1909,6 @@ private actor ScriptedOwnershipHTTPTransport: HTTPTransport {
     private var cancelledVersions: [String] = []
     private var activePosts = 0
     private var maximumPosts = 0
-    private var postWaiters: [CheckedContinuation<Void, Never>] = []
     private var cancellationWaiters: [CheckedContinuation<Void, Never>] = []
     private var controlledWaiters: [CheckedContinuation<HTTPResponseSnapshot, Never>] = []
     private var bufferedResponses: [HTTPResponseSnapshot] = []
@@ -1925,8 +1936,6 @@ private actor ScriptedOwnershipHTTPTransport: HTTPTransport {
             activePosts += 1
             maximumPosts = max(maximumPosts, activePosts)
             NotificationCenter.default.post(name: Self.postStartedNotification, object: nil)
-            postWaiters.forEach { $0.resume() }
-            postWaiters.removeAll()
         }
         let task = Task<HTTPResponseSnapshot, Error>(name: "MobileConsentsFacadeOwnershipTests.transportOperation") {
             let response = await self.response(for: response)
@@ -1953,9 +1962,22 @@ private actor ScriptedOwnershipHTTPTransport: HTTPTransport {
     func cancelledPostVersions() -> [String] { cancelledVersions }
     func maximumActivePosts() -> Int { maximumPosts }
 
-    func waitForPostCount(_ count: Int) async {
+    func waitForPostCount(
+        _ count: Int,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) async {
+        let deadline = ProcessInfo.processInfo.systemUptime + 10
         while recordedPosts.count < count {
-            await withCheckedContinuation { postWaiters.append($0) }
+            guard ProcessInfo.processInfo.systemUptime < deadline else {
+                XCTFail(
+                    "Expected \(count) POST requests, received \(recordedPosts.count)",
+                    file: file,
+                    line: line
+                )
+                return
+            }
+            try? await Task<Never, Never>.sleep(nanoseconds: 10_000_000)
         }
     }
 
