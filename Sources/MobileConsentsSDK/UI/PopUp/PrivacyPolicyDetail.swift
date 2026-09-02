@@ -133,6 +133,11 @@ public class PrivacyPolicyDetail: UIViewController {
         }
         alert.addAction(copyAction)
         alert.addAction(closeAction)
+
+        if let popoverPresentationController = alert.popoverPresentationController {
+            popoverPresentationController.sourceView = deviceInfoLabel
+            popoverPresentationController.sourceRect = deviceInfoLabel.bounds
+        }
         
         present(alert, animated: true)
         

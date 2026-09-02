@@ -1,12 +1,19 @@
 import Foundation
 
 struct ConsentStorageDomain: Hashable, Sendable {
+    private static let applicationSupportDirectory = FileManager.default.urls(
+        for: .applicationSupportDirectory,
+        in: .userDomainMask
+    ).first ?? FileManager.default.temporaryDirectory.appendingPathComponent(
+        "MobileConsentsSDK",
+        isDirectory: true
+    )
+
     static let standard = ConsentStorageDomain(
         legacyUserDefaultsSuiteName: nil,
-        consentDatabasePath: FileManager.default.urls(
-            for: .applicationSupportDirectory,
-            in: .userDomainMask
-        )[0].appendingPathComponent("MobileConsentsSDK.sqlite3").path
+        consentDatabasePath: applicationSupportDirectory
+            .appendingPathComponent("MobileConsentsSDK.sqlite3")
+            .path
     )
 
     private let legacyUserDefaultsSuiteName: String?

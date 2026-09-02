@@ -123,6 +123,38 @@ final class ConsentStoreCompatibilityTests: XCTestCase {
         assertNoLegacy()
     }
 
+    func testLegacyPayloadWithEmptyTranslationsIsNotImportedAndKeysRemain() throws {
+        defaults.set("legacy-user", forKey: LegacyConsentStorageKey.userIdKey)
+        defaults.set("legacy-version", forKey: LegacyConsentStorageKey.consentsVersionIdKey)
+        let value = UserConsentValue(
+            consentItem: ConsentItem(
+                id: "empty-translations",
+                required: false,
+                type: .functional,
+                translations: Translated(translations: [], primaryLanguage: nil)
+            ),
+            isSelected: true
+        )
+        defaults.set(
+            ["empty-translations": try JSONEncoder().encode(value)],
+            forKey: LegacyConsentStorageKey.consentsKey
+        )
+        let persistence = try makeStore()
+
+        XCTAssertThrowsError(try persistence.readSnapshot()) { error in
+            XCTAssertEqual(error as? ConsentStoreError, .readFailed)
+        }
+        XCTAssertEqual(
+            defaults.string(forKey: LegacyConsentStorageKey.userIdKey),
+            "legacy-user"
+        )
+        XCTAssertNotNil(defaults.object(forKey: LegacyConsentStorageKey.consentsKey))
+        XCTAssertEqual(
+            defaults.string(forKey: LegacyConsentStorageKey.consentsVersionIdKey),
+            "legacy-version"
+        )
+    }
+
     func testStaleVersionWithoutLegacyUserIDDoesNotCreateProfile() throws {
         defaults.set("legacy-version", forKey: LegacyConsentStorageKey.consentsVersionIdKey)
         let persistence = try makeStore()

@@ -2,6 +2,18 @@ import XCTest
 @testable import MobileConsentsSDK
 
 final class DecodingTests: XCTestCase {
+    func testEmptyTranslationsAreRejectedDuringDecoding() {
+        let data = Data("[]".utf8)
+
+        XCTAssertThrowsError(
+            try JSONDecoder().decode(Translated<ConsentTranslation>.self, from: data)
+        ) { error in
+            guard case DecodingError.dataCorrupted = error else {
+                return XCTFail("Expected dataCorrupted, got \(error)")
+            }
+        }
+    }
+
     func testConsentSolutionIsCorrectlyDecoded() throws {
         let data = try Data(contentsOf: XCTUnwrap(Bundle.module.url(forResource: "ConsentSolution", withExtension: "json")))
 
