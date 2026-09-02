@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+
+jobs:
+  tests:
+    name: SDK Tests
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Show tool versions
+        run: |
+          xcodebuild -version
+          swift --version
+
+      - name: Run tests
+        run: |
+          xcodebuild test -quiet \
+            -scheme MobileConsentsSDK \
+            -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest' \
+            -derivedDataPath "$RUNNER_TEMP/MobileConsentsSDKTests" \
+            -parallel-testing-enabled NO \
+            CODE_SIGNING_ALLOWED=NO
+
+  example:
+    name: Example Build
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Build Example
+        run: |
+          xcodebuild build \
+            -project Example/MobileConsentsSDK.xcodeproj \
+            -scheme Example \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/MobileConsentsSDKExample" \
+            CODE_SIGNING_ALLOWED=NO
+
+  cocoapods:
+    name: CocoaPods Validation
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Show CocoaPods version
+        run: pod --version
+
+      - name: Validate podspec
+        run: pod lib lint MobileConsentsSDK.podspec --allow-warnings

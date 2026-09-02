@@ -1204,7 +1204,7 @@ final class MobileConsentsFacadeOwnershipTests: XCTestCase {
         popup.acceptAll()
         await fulfillment(of: [callback], timeout: 2)
         await transport.waitForPostCount(1)
-        XCTAssertEqual(presenter.events, ["dismissalCompletion", "userCallback"])
+        XCTAssertEqual(presenter.events, ["userCallback", "dismissalCompletion"])
         await waitForPending(reader, versionID: fixture.versionId)
 
         let snapshot = reader.snapshot()
