@@ -7,8 +7,8 @@ final class ShowPrivacyPopupIfNeededRequest: MainActorRequest {
     private let presentingViewController: UIViewController?
     private let animated: Bool
     private let ignoreVersionChanges: Bool
-    private let completion: (([UserConsent]) -> Void)?
-    private let errorHandler: ((Error) -> Void)?
+    private let completion: ([UserConsent]) -> Void
+    private let errorHandler: (Error) -> Void
 
     init(
         coordinator: PrivacyPopupCoordinator,
@@ -17,8 +17,8 @@ final class ShowPrivacyPopupIfNeededRequest: MainActorRequest {
         presentingViewController: UIViewController?,
         animated: Bool,
         ignoreVersionChanges: Bool,
-        completion: (([UserConsent]) -> Void)?,
-        errorHandler: ((Error) -> Void)?
+        completion: @escaping ([UserConsent]) -> Void,
+        errorHandler: @escaping (Error) -> Void
     ) {
         self.coordinator = coordinator
         self.mobileConsents = mobileConsents
@@ -43,9 +43,9 @@ final class ShowPrivacyPopupIfNeededRequest: MainActorRequest {
                     animated: animated,
                     ignoreVersionChanges: ignoreVersionChanges
                 )
-                completion?(consents)
+                completion(consents)
             } catch {
-                errorHandler?(LegacyNetworkErrorAdapter.adapt(error))
+                errorHandler(LegacyNetworkErrorAdapter.adapt(error))
             }
         }
     }

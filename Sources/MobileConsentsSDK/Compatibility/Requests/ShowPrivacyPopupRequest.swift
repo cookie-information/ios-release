@@ -6,8 +6,8 @@ final class ShowPrivacyPopupRequest: MainActorRequest {
     private let customViewType: PrivacyPopupProtocol.Type?
     private let presentingViewController: UIViewController?
     private let animated: Bool
-    private let completion: (([UserConsent]) -> Void)?
-    private let errorHandler: ((Error) -> Void)?
+    private let completion: ([UserConsent]) -> Void
+    private let errorHandler: (Error) -> Void
 
     init(
         coordinator: PrivacyPopupCoordinator,
@@ -15,8 +15,8 @@ final class ShowPrivacyPopupRequest: MainActorRequest {
         customViewType: PrivacyPopupProtocol.Type?,
         presentingViewController: UIViewController?,
         animated: Bool,
-        completion: (([UserConsent]) -> Void)?,
-        errorHandler: ((Error) -> Void)?
+        completion: @escaping ([UserConsent]) -> Void,
+        errorHandler: @escaping (Error) -> Void
     ) {
         self.coordinator = coordinator
         self.mobileConsents = mobileConsents

@@ -161,7 +161,7 @@ Just like in Swift, the same methods are used to display the privacy pop-up, onl
 
 ### Handling errors
 
-Both `showPrivacyPopUp` and `showPrivacyPopUpIfNeeded` accept an `errorHandler` closure. It reports consent-solution fetch, presentation, submission creation, and local-persistence errors. It does not report background upload failures.
+Both `showPrivacyPopUp` and `showPrivacyPopUpIfNeeded` require a completion closure and an `errorHandler` closure. The error handler reports consent-solution fetch, presentation, submission creation, and local-persistence errors. It does not report background upload failures.
 
 After the user accepts or rejects the selection, the SDK verifies the local write and calls the completion block before starting the popup dismissal. If the local write fails, it calls the error handler instead.
 

@@ -1,6 +1,6 @@
 # Migrating from 1.x to 2.0
 
-Version 2.0 adds async/await APIs and changes consent submission to a local-first flow. A submitted decision is saved on the device before the SDK attempts to upload it. Existing callback APIs and synchronous local-data accessors remain available. The `cancel()` method is removed, and the Boolean network-logging initializer is deprecated.
+Version 2.0 adds async/await APIs and changes consent submission to a local-first flow. A submitted decision is saved on the device before the SDK attempts to upload it. Callback APIs and synchronous local-data accessors remain available, but popup callback APIs now require both success and error handlers. The `cancel()` method is removed, and the Boolean network-logging initializer is deprecated.
 
 ## Requirements
 
@@ -15,7 +15,7 @@ Version 2.0 adds async/await APIs and changes consent submission to a local-firs
 | `userId` | `getUserId()` | No immediate change. Use the async method when you need persistence errors to be reported. |
 | `getSavedConsents()` | `loadSavedConsents()` | No immediate change. Use the async method when you need persistence errors to be reported. |
 | `removeStoredConsents()` | `clearStoredConsents()` | No immediate change. Use the async method when you need confirmation that local removal succeeded. |
-| Callback-based fetch, post, and popup methods | Async overloads with the same names | No immediate change. Adopt async/await where appropriate. |
+| Callback-based popup methods with optional callbacks | Callback methods requiring `completion` and `errorHandler`; async overloads with the same names | Provide both callbacks, or adopt async/await. |
 | `synchronizeIfNeeded()` | Async overload returning `Bool` | No immediate change. Use the async overload to check whether pending consent remains after the attempt. |
 | `cancel()` | No replacement | Remove calls to `cancel()`. |
 
@@ -50,7 +50,7 @@ Objective-C imports the new async local-data methods as `getUserIdWithCompletion
 
 3. Remove calls to `cancel()`.
 
-4. Review `postConsent`, `showPrivacyPopUp`, and `showPrivacyPopUpIfNeeded` completions. A successful completion confirms local persistence, not delivery to the server.
+4. Provide both `completion` and `errorHandler` when calling callback-based `showPrivacyPopUp` or `showPrivacyPopUpIfNeeded`. Review popup and `postConsent` completions: success confirms local persistence, not delivery to the server.
 
 5. Optionally adopt the async APIs:
 
@@ -60,6 +60,4 @@ Objective-C imports the new async local-data methods as `getUserIdWithCompletion
    try await mobileConsentsSDK.postConsent(consent)
    ```
 
-6. In an async context, a popup call that omits `completion` can select the async overload. Use `try await` for the async API, or pass `completion: nil` explicitly when you intend to call the callback-based overload without handling its result.
-
-7. Test saving consent while offline, relaunching the app, and calling `synchronizeIfNeeded()` after connectivity returns.
+6. Test saving consent while offline, relaunching the app, and calling `synchronizeIfNeeded()` after connectivity returns.

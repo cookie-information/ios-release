@@ -935,7 +935,8 @@ final class MobileConsentsFacadeOwnershipTests: XCTestCase {
                 XCTAssertEqual(consents.first?.consentItem.id, legacyConsentID)
                 XCTAssertEqual(consents.first?.isSelected, true)
                 completion.fulfill()
-            }
+            },
+            errorHandler: { error in XCTFail("Unexpected error: \(error)") }
         )
 
         await fulfillment(of: [completion], timeout: 2)
@@ -965,6 +966,8 @@ final class MobileConsentsFacadeOwnershipTests: XCTestCase {
             XCTAssertTrue(Thread.isMainThread)
             XCTAssertEqual(consents.map(\.consentItem.id), [storedValue.consentItem.id])
             completion.fulfill()
+        }, errorHandler: { error in
+            XCTFail("Unexpected error: \(error)")
         })
 
         await fulfillment(of: [completion], timeout: 2)
@@ -1111,7 +1114,8 @@ final class MobileConsentsFacadeOwnershipTests: XCTestCase {
 
         client.showPrivacyPopUpIfNeeded(
             customViewType: OwnershipRecordingPopup.self,
-            completion: nil
+            completion: { _ in },
+            errorHandler: { error in XCTFail("Unexpected error: \(error)") }
         )
 
         await fulfillment(of: [popupConstructed], timeout: 2)
@@ -1144,7 +1148,8 @@ final class MobileConsentsFacadeOwnershipTests: XCTestCase {
             customViewType: LoadingOwnershipPopup.self,
             onViewController: presentingViewController,
             animated: false,
-            completion: nil
+            completion: { _ in },
+            errorHandler: { error in XCTFail("Unexpected error: \(error)") }
         )
 
         await fulfillment(of: [popupPresented], timeout: 2)
@@ -1327,7 +1332,8 @@ final class MobileConsentsFacadeOwnershipTests: XCTestCase {
 
         client.showPrivacyPopUpIfNeeded(
             customViewType: OwnershipRecordingPopup.self,
-            completion: nil
+            completion: { _ in },
+            errorHandler: { error in XCTFail("Unexpected error: \(error)") }
         )
         await fulfillment(of: [retryPostStarted, popupConstructed], timeout: 2)
 
@@ -1388,7 +1394,8 @@ final class MobileConsentsFacadeOwnershipTests: XCTestCase {
         await fulfillment(of: [postCompletion, acceptedPostStarted], timeout: 2)
         client.showPrivacyPopUpIfNeeded(
             customViewType: OwnershipRecordingPopup.self,
-            completion: nil
+            completion: { _ in },
+            errorHandler: { error in XCTFail("Unexpected error: \(error)") }
         )
         await fulfillment(of: [popupConstructed], timeout: 2)
 
@@ -1827,15 +1834,20 @@ private final class BackgroundShowIfNeededInvoker: NSObject {
     private let client: MobileConsents
     private let backgroundCall: XCTestExpectation
     private let completion: ([UserConsent]) -> Void
+    private let errorHandler: (Error) -> Void
 
     init(
         client: MobileConsents,
         backgroundCall: XCTestExpectation,
-        completion: @escaping ([UserConsent]) -> Void
+        completion: @escaping ([UserConsent]) -> Void,
+        errorHandler: @escaping (Error) -> Void = { error in
+            XCTFail("Unexpected error: \(error)")
+        }
     ) {
         self.client = client
         self.backgroundCall = backgroundCall
         self.completion = completion
+        self.errorHandler = errorHandler
     }
 
     func start() {
@@ -1845,7 +1857,10 @@ private final class BackgroundShowIfNeededInvoker: NSObject {
     @objc private func invoke() {
         XCTAssertFalse(Thread.isMainThread)
         backgroundCall.fulfill()
-        client.showPrivacyPopUpIfNeeded(completion: completion)
+        client.showPrivacyPopUpIfNeeded(
+            completion: completion,
+            errorHandler: errorHandler
+        )
     }
 }
 
@@ -2188,10 +2203,16 @@ private func callSynchronousPopup(
         PrivacyPopupProtocol.Type?,
         UIViewController?,
         Bool,
-        (([UserConsent]) -> Void)?,
-        ((Error) -> Void)?
+        @escaping ([UserConsent]) -> Void,
+        @escaping (Error) -> Void
     ) -> Void = client.showPrivacyPopUp
-    show(customViewType, viewController, animated, nil, nil)
+    show(
+        customViewType,
+        viewController,
+        animated,
+        { _ in },
+        { error in XCTFail("Unexpected error: \(error)") }
+    )
 }
 
 @MainActor

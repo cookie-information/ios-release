@@ -28,23 +28,23 @@ final class PublicAPICompatibilityTests: XCTestCase {
             PrivacyPopupProtocol.Type?,
             UIViewController?,
             Bool,
-            (([UserConsent]) -> Void)?,
-            ((Error) -> Void)?
+            @escaping ([UserConsent]) -> Void,
+            @escaping (Error) -> Void
         ) -> Void = client.showPrivacyPopUp
         let showPrivacyPopUpIfNeeded: (
             PrivacyPopupProtocol.Type?,
             UIViewController?,
             Bool,
             Bool,
-            (([UserConsent]) -> Void)?,
-            ((Error) -> Void)?
+            @escaping ([UserConsent]) -> Void,
+            @escaping (Error) -> Void
         ) -> Void = client.showPrivacyPopUpIfNeeded
 
-        let callShowPrivacyPopUpWithDefaults: () -> Void = {
-            client.showPrivacyPopUp()
+        let callShowPrivacyPopUpWithDefaultPresentation: () -> Void = {
+            client.showPrivacyPopUp(completion: { _ in }, errorHandler: { _ in })
         }
-        let callShowPrivacyPopUpIfNeededWithDefaults: () -> Void = {
-            client.showPrivacyPopUpIfNeeded()
+        let callShowPrivacyPopUpIfNeededWithDefaultPresentation: () -> Void = {
+            client.showPrivacyPopUpIfNeeded(completion: { _ in }, errorHandler: { _ in })
         }
 
         XCTAssertNotNil(fetchConsentSolution)
@@ -54,8 +54,8 @@ final class PublicAPICompatibilityTests: XCTestCase {
         XCTAssertNotNil(removeStoredConsents)
         XCTAssertNotNil(showPrivacyPopUp)
         XCTAssertNotNil(showPrivacyPopUpIfNeeded)
-        XCTAssertNotNil(callShowPrivacyPopUpWithDefaults)
-        XCTAssertNotNil(callShowPrivacyPopUpIfNeededWithDefaults)
+        XCTAssertNotNil(callShowPrivacyPopUpWithDefaultPresentation)
+        XCTAssertNotNil(callShowPrivacyPopUpIfNeededWithDefaultPresentation)
 
         // These are compile-only checks. Neither selector invokes networking or UI.
         _ = #selector(MobileConsents.showPrivacyPopUp(
