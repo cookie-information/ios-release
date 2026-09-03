@@ -1,5 +1,6 @@
 import UIKit
 
+@MainActor
 public protocol Section {
     static func registerCells(in tableView: UITableView)
     

@@ -1,4 +1,4 @@
-// swift-tools-version: 5.10
+// swift-tools-version: 6.2
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -13,15 +13,22 @@ let package = Package(
             name: "MobileConsentsSDK",
             targets: ["MobileConsentsSDK"]),
     ],
-    dependencies: [],
     targets: [
         .target(
             name: "MobileConsentsSDK",
-            dependencies: [],
-            resources: [.copy("Resources/PrivacyInfo.xcprivacy")]),
+            resources: [.copy("Resources/PrivacyInfo.xcprivacy")],
+            swiftSettings: [
+                .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
+                .enableUpcomingFeature("InferIsolatedConformances"),
+            ],
+            linkerSettings: [.linkedLibrary("sqlite3")]),
         .testTarget(
             name: "MobileConsentsSDKTests",
             dependencies: ["MobileConsentsSDK"],
-            resources: [.process("Resources")])
+            resources: [.process("Resources")],
+            swiftSettings: [
+                .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
+                .enableUpcomingFeature("InferIsolatedConformances"),
+            ])
     ]
 )

@@ -1,47 +1,17 @@
 import UIKit
 import MobileConsentsSDK
 
-enum MobileConsentsSolutionSectionType {
-    case info
-    case items
-}
-
-enum MobileConsentsSolutionCellType {
-    case solutionDetails
-    case consentItem
-}
-
 final class MobileConsentsSolutionViewController: BaseViewController {
    
     @IBOutlet weak var showPrivacyCenterButton: UIBarButtonItem!
     
-    private enum Constants {
-        static let defaultLanguage = "EN"
-        static let buttonCornerRadius: CGFloat = 5.0
-    }
-    
     private var viewModel = MobileConsentSolutionViewModel()
-    
-    private var language: String {
-        Constants.defaultLanguage
-    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-    }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
         viewModel.showPrivacyPopUpIfNeeded()
     }
-    
-    
-    @IBAction private func getAction() {
-        view.endEditing(true)
-    }
-    
-    
     @IBAction private func showPopUpAction() {        showSelection()
     }
     
@@ -75,12 +45,5 @@ final class MobileConsentsSolutionViewController: BaseViewController {
         }))
         
         self.present(alert, animated: true)
-    }
-}
-
-extension MobileConsentsSolutionViewController: UITextFieldDelegate {
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        textField.resignFirstResponder()
-        return true
     }
 }

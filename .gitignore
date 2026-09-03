@@ -5,3 +5,6 @@ Example/MobileConsentsSDK.xcodeproj/xcuserdata/andrasmarczell.xcuserdatad/xcdebu
 .build
 .swiftpm/
 xcuserdata/
+
+# Generated build output (including Example/build/)
+build/

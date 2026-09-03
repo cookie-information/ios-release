@@ -7,22 +7,21 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C0DE00012F50A00100000001 /* Rubik-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 935E136728F955EB00BAF8E3 /* Rubik-Regular.ttf */; };
+		C0DE00012F50A00100000002 /* Rubik-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 935E136628F955EB00BAF8E3 /* Rubik-Medium.ttf */; };
+		C0DE00012F50A00100000003 /* Rubik-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 935E136528F955EB00BAF8E3 /* Rubik-Light.ttf */; };
+		C0DE00012F50A00100000004 /* Rubik-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 935E136428F955EB00BAF8E3 /* Rubik-Bold.ttf */; };
 		935E137228F955EB00BAF8E3 /* BaseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 935E135228F955EB00BAF8E3 /* BaseViewController.swift */; };
-		935E137328F955EB00BAF8E3 /* MobileConsentError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 935E135328F955EB00BAF8E3 /* MobileConsentError.swift */; };
 		935E137428F955EB00BAF8E3 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 935E135428F955EB00BAF8E3 /* AppDelegate.swift */; };
 		935E140228F955EB00BAF8E3 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 935E140128F955EB00BAF8E3 /* SceneDelegate.swift */; };
-		935E137528F955EB00BAF8E3 /* UIButton+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 935E135628F955EB00BAF8E3 /* UIButton+Extensions.swift */; };
 		935E137628F955EB00BAF8E3 /* UITableViewCell+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 935E135728F955EB00BAF8E3 /* UITableViewCell+Extensions.swift */; };
 		935E137728F955EB00BAF8E3 /* Collection+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 935E135828F955EB00BAF8E3 /* Collection+Extensions.swift */; };
 		935E137828F955EB00BAF8E3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 935E135A28F955EB00BAF8E3 /* Assets.xcassets */; };
 		935E137928F955EB00BAF8E3 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 935E135B28F955EB00BAF8E3 /* LaunchScreen.storyboard */; };
 		935E137A28F955EB00BAF8E3 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 935E135D28F955EB00BAF8E3 /* Main.storyboard */; };
-		935E137B28F955EB00BAF8E3 /* LaunchScreen.strings in Resources */ = {isa = PBXBuildFile; fileRef = 935E135F28F955EB00BAF8E3 /* LaunchScreen.strings */; };
 		935E137C28F955EB00BAF8E3 /* Main.strings in Resources */ = {isa = PBXBuildFile; fileRef = 935E136128F955EB00BAF8E3 /* Main.strings */; };
 		935E138128F955EB00BAF8E3 /* MobileConsentsSolutionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 935E136928F955EB00BAF8E3 /* MobileConsentsSolutionViewModel.swift */; };
 		935E138228F955EB00BAF8E3 /* MobileConsentsSolutionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 935E136A28F955EB00BAF8E3 /* MobileConsentsSolutionViewController.swift */; };
-		935E138328F955EB00BAF8E3 /* ConsentItemDetailsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 935E136C28F955EB00BAF8E3 /* ConsentItemDetailsTableViewCell.swift */; };
-		935E138428F955EB00BAF8E3 /* SolutionDetailsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 935E136D28F955EB00BAF8E3 /* SolutionDetailsTableViewCell.swift */; };
 		935E138528F955EB00BAF8E3 /* SavedItemTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 935E136F28F955EB00BAF8E3 /* SavedItemTableViewCell.swift */; };
 		935E138628F955EB00BAF8E3 /* SavedDataViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 935E137028F955EB00BAF8E3 /* SavedDataViewController.swift */; };
 		935E138A28F9564300BAF8E3 /* MobileConsentsSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 935E138928F9564300BAF8E3 /* MobileConsentsSDK */; };
@@ -38,32 +37,19 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		9B01504A252C63AD00FE97A8 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		119AFB0225230F9100186CB7 /* MobileConsent.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MobileConsent.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		935E135028F955EB00BAF8E3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = SOURCE_ROOT; };
 		935E135228F955EB00BAF8E3 /* BaseViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseViewController.swift; sourceTree = "<group>"; };
-		935E135328F955EB00BAF8E3 /* MobileConsentError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MobileConsentError.swift; sourceTree = "<group>"; };
 		935E135428F955EB00BAF8E3 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = SOURCE_ROOT; };
 		935E140128F955EB00BAF8E3 /* SceneDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = SOURCE_ROOT; };
-		935E135628F955EB00BAF8E3 /* UIButton+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIButton+Extensions.swift"; sourceTree = "<group>"; };
 		935E135728F955EB00BAF8E3 /* UITableViewCell+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UITableViewCell+Extensions.swift"; sourceTree = "<group>"; };
 		935E135828F955EB00BAF8E3 /* Collection+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Collection+Extensions.swift"; sourceTree = "<group>"; };
 		935E135A28F955EB00BAF8E3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		935E135C28F955EB00BAF8E3 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		935E135E28F955EB00BAF8E3 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		935E136028F955EB00BAF8E3 /* hu */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = hu; path = hu.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
 		935E136228F955EB00BAF8E3 /* hu */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = hu; path = hu.lproj/Main.strings; sourceTree = "<group>"; };
 		935E136428F955EB00BAF8E3 /* Rubik-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Rubik-Bold.ttf"; sourceTree = "<group>"; };
 		935E136528F955EB00BAF8E3 /* Rubik-Light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Rubik-Light.ttf"; sourceTree = "<group>"; };
@@ -71,8 +57,6 @@
 		935E136728F955EB00BAF8E3 /* Rubik-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Rubik-Regular.ttf"; sourceTree = "<group>"; };
 		935E136928F955EB00BAF8E3 /* MobileConsentsSolutionViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MobileConsentsSolutionViewModel.swift; sourceTree = "<group>"; };
 		935E136A28F955EB00BAF8E3 /* MobileConsentsSolutionViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MobileConsentsSolutionViewController.swift; sourceTree = "<group>"; };
-		935E136C28F955EB00BAF8E3 /* ConsentItemDetailsTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConsentItemDetailsTableViewCell.swift; sourceTree = "<group>"; };
-		935E136D28F955EB00BAF8E3 /* SolutionDetailsTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SolutionDetailsTableViewCell.swift; sourceTree = "<group>"; };
 		935E136F28F955EB00BAF8E3 /* SavedItemTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SavedItemTableViewCell.swift; sourceTree = "<group>"; };
 		935E137028F955EB00BAF8E3 /* SavedDataViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SavedDataViewController.swift; sourceTree = "<group>"; };
 		935E138828F9563100BAF8E3 /* mobileconsentsios */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = mobileconsentsios; path = ..; sourceTree = "<group>"; };
@@ -152,7 +136,6 @@
 			children = (
 				935E135428F955EB00BAF8E3 /* AppDelegate.swift */,
 				935E140128F955EB00BAF8E3 /* SceneDelegate.swift */,
-				935E136B28F955EB00BAF8E3 /* Cells */,
 				935E135128F955EB00BAF8E3 /* Components */,
 				935E135528F955EB00BAF8E3 /* Extensions */,
 				935E135028F955EB00BAF8E3 /* Info.plist */,
@@ -167,7 +150,6 @@
 			isa = PBXGroup;
 			children = (
 				935E135228F955EB00BAF8E3 /* BaseViewController.swift */,
-				935E135328F955EB00BAF8E3 /* MobileConsentError.swift */,
 			);
 			path = Components;
 			sourceTree = SOURCE_ROOT;
@@ -175,7 +157,6 @@
 		935E135528F955EB00BAF8E3 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
-				935E135628F955EB00BAF8E3 /* UIButton+Extensions.swift */,
 				935E135728F955EB00BAF8E3 /* UITableViewCell+Extensions.swift */,
 				935E135828F955EB00BAF8E3 /* Collection+Extensions.swift */,
 			);
@@ -188,7 +169,6 @@
 				935E135A28F955EB00BAF8E3 /* Assets.xcassets */,
 				935E135B28F955EB00BAF8E3 /* LaunchScreen.storyboard */,
 				935E135D28F955EB00BAF8E3 /* Main.storyboard */,
-				935E135F28F955EB00BAF8E3 /* LaunchScreen.strings */,
 				935E136128F955EB00BAF8E3 /* Main.strings */,
 				935E136328F955EB00BAF8E3 /* Fonts */,
 			);
@@ -214,15 +194,6 @@
 				935E136A28F955EB00BAF8E3 /* MobileConsentsSolutionViewController.swift */,
 			);
 			path = MobileContentSolution;
-			sourceTree = SOURCE_ROOT;
-		};
-		935E136B28F955EB00BAF8E3 /* Cells */ = {
-			isa = PBXGroup;
-			children = (
-				935E136C28F955EB00BAF8E3 /* ConsentItemDetailsTableViewCell.swift */,
-				935E136D28F955EB00BAF8E3 /* SolutionDetailsTableViewCell.swift */,
-			);
-			path = Cells;
 			sourceTree = SOURCE_ROOT;
 		};
 		935E136E28F955EB00BAF8E3 /* SavedData */ = {
@@ -278,7 +249,6 @@
 				119AFAFE25230F9100186CB7 /* Sources */,
 				119AFAFF25230F9100186CB7 /* Frameworks */,
 				119AFB0025230F9100186CB7 /* Resources */,
-				9B01504A252C63AD00FE97A8 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -378,10 +348,13 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0DE00012F50A00100000001 /* Rubik-Regular.ttf in Resources */,
+				C0DE00012F50A00100000002 /* Rubik-Medium.ttf in Resources */,
+				C0DE00012F50A00100000003 /* Rubik-Light.ttf in Resources */,
+				C0DE00012F50A00100000004 /* Rubik-Bold.ttf in Resources */,
 				935E137928F955EB00BAF8E3 /* LaunchScreen.storyboard in Resources */,
 				935E137828F955EB00BAF8E3 /* Assets.xcassets in Resources */,
 				935E137C28F955EB00BAF8E3 /* Main.strings in Resources */,
-				935E137B28F955EB00BAF8E3 /* LaunchScreen.strings in Resources */,
 				935E137A28F955EB00BAF8E3 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -412,14 +385,10 @@
 			files = (
 				935E138628F955EB00BAF8E3 /* SavedDataViewController.swift in Sources */,
 				935E138128F955EB00BAF8E3 /* MobileConsentsSolutionViewModel.swift in Sources */,
-				935E138428F955EB00BAF8E3 /* SolutionDetailsTableViewCell.swift in Sources */,
 				935E137428F955EB00BAF8E3 /* AppDelegate.swift in Sources */,
 				935E140228F955EB00BAF8E3 /* SceneDelegate.swift in Sources */,
-				935E138328F955EB00BAF8E3 /* ConsentItemDetailsTableViewCell.swift in Sources */,
-				935E137528F955EB00BAF8E3 /* UIButton+Extensions.swift in Sources */,
 				935E137228F955EB00BAF8E3 /* BaseViewController.swift in Sources */,
 				935E137628F955EB00BAF8E3 /* UITableViewCell+Extensions.swift in Sources */,
-				935E137328F955EB00BAF8E3 /* MobileConsentError.swift in Sources */,
 				935E138228F955EB00BAF8E3 /* MobileConsentsSolutionViewController.swift in Sources */,
 				935E137728F955EB00BAF8E3 /* Collection+Extensions.swift in Sources */,
 				9377B05629BA0A2500742C64 /* CustomPopup.swift in Sources */,
@@ -462,14 +431,6 @@
 				935E135E28F955EB00BAF8E3 /* Base */,
 			);
 			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
-		935E135F28F955EB00BAF8E3 /* LaunchScreen.strings */ = {
-			isa = PBXVariantGroup;
-			children = (
-				935E136028F955EB00BAF8E3 /* hu */,
-			);
-			name = LaunchScreen.strings;
 			sourceTree = "<group>";
 		};
 		935E136128F955EB00BAF8E3 /* Main.strings */ = {

@@ -5,7 +5,7 @@ public protocol PrivacyPopupProtocol {
     init(viewModel: PrivacyPopUpViewModel)
 }
 
-final class PrivacyPopUpViewController: UIViewController, PrivacyPopupProtocol {
+final class PrivacyPopUpViewController: UIViewController, @MainActor PrivacyPopupProtocol {
     private lazy var navigationBar: UINavigationBar = {
         let bar = UINavigationBar()
         bar.isTranslucent = true
@@ -281,13 +281,6 @@ extension PrivacyPopUpViewController {
     }
     
 }
-
-extension String {
-    init(key: String) {
-        self = NSLocalizedString(key, bundle: Bundle.module, comment: "")
-    }
-}
-
 
 final class FixedTableView: UITableView {
     override var contentSize:CGSize {

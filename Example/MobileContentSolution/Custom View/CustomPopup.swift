@@ -1,7 +1,7 @@
 import UIKit
 import MobileConsentsSDK
 
-final class CustomPopup: UIViewController, PrivacyPopupProtocol {
+final class CustomPopup: UIViewController, @MainActor PrivacyPopupProtocol {
     
     let viewModel: PrivacyPopUpViewModel
     var data: PrivacyPopUpData?

@@ -1,6 +1,7 @@
 import XCTest
 @testable import MobileConsentsSDK
 
+@MainActor
 class PrivacyPopUpViewModelTests: XCTestCase {
     var sut: PrivacyPopUpViewModel!
     var consentSolutionManager: ConsentSolutionManagerMock!
@@ -86,99 +87,78 @@ class PrivacyPopUpViewModelTests: XCTestCase {
         XCTAssertEqual(data.readMoreButton, solution.templateTexts.readMoreButton.primaryTranslation().text)
     }
 
-    func test_tappingRejectAllButtonShowsLoaderAndHidesItAfterFinish() {
-        sut.buttonTapped(type: .rejectAll)
+    func test_tappingRejectAllKeepsPopupOpenUntilSaveFinishes() {
+        assertSavePending(for: { $0.rejectAll() })
+    }
 
-        XCTAssertTrue(try XCTUnwrap(isLoading))
+    func test_tappingAcceptAllKeepsPopupOpenUntilSaveFinishes() {
+        assertSavePending(for: { $0.acceptAll() })
+    }
 
+    func test_tappingAcceptSelectedKeepsPopupOpenUntilSaveFinishes() {
+        assertSavePending(for: { $0.acceptSelected() })
+    }
+
+    func test_tappingAcceptAllCompletesCallbacksAfterLateSuccess() {
+        sut.acceptAll()
         consentSolutionManager.completion?(nil)
 
+        XCTAssertEqual(router.closeAllCallCount, 1)
+        XCTAssertNil(router.closeAllError)
         XCTAssertFalse(try XCTUnwrap(isLoading))
     }
 
-    func test_tappingRejectAllClosesAfterSuccessfulFinish() {
-        sut.buttonTapped(type: .rejectAll)
-
-        consentSolutionManager.completion?(nil)
-
-        XCTAssertTrue(router.closeAllCalled)
-        XCTAssertNil(router.closeAllError)
-    }
-
-    func test_tappingRejectAllClosesWithErrorAfterError() {
-        sut.buttonTapped(type: .rejectAll)
-
+    func test_tappingAcceptAllCompletesErrorHandlerAfterLateFailure() {
+        sut.acceptAll()
         consentSolutionManager.completion?(sampleError)
 
-        XCTAssertTrue(router.closeAllCalled)
-        XCTAssertNotNil(router.closeAllError)
-    }
-
-    func test_tappingAcceptAllButtonShowsLoaderAndHidesItAfterFinish() {
-        sut.buttonTapped(type: .acceptAll)
-
-        XCTAssertTrue(try XCTUnwrap(isLoading))
-
-        consentSolutionManager.completion?(nil)
-
+        XCTAssertEqual(router.closeAllCallCount, 1)
+        XCTAssertEqual(router.closeAllError as NSError?, sampleError)
         XCTAssertFalse(try XCTUnwrap(isLoading))
     }
 
-    func test_tappingAcceptAllClosesAfterSuccessfulFinish() {
-        sut.buttonTapped(type: .acceptAll)
+    func test_doubleTapEnqueuesOnlyOneSubmission() {
+        sut.acceptAll()
+        sut.acceptAll()
 
-        consentSolutionManager.completion?(nil)
-
-        XCTAssertTrue(router.closeAllCalled)
-        XCTAssertNil(router.closeAllError)
+        XCTAssertEqual(consentSolutionManager.acceptAllCallCount, 1)
+        XCTAssertEqual(router.closeAllCallCount, 0)
     }
 
-    func test_tappingAcceptAllClosesWithErrorAfterError() {
-        sut.buttonTapped(type: .acceptAll)
+    func test_tappingAcceptBeforeConsentSolutionIsLoadedKeepsPopUpOpenAndHidesLoader() {
+        sut.acceptAll()
 
-        consentSolutionManager.completion?(sampleError)
-
-        XCTAssertTrue(router.closeAllCalled)
-        XCTAssertNotNil(router.closeAllError)
-    }
-
-    func test_tappingAcceptSelectedButtonShowsLoaderAndHidesItAfterFinish() {
-        sut.buttonTapped(type: .acceptSelected)
-
-        XCTAssertTrue(try XCTUnwrap(isLoading))
-
-        consentSolutionManager.completion?(nil)
-
-        XCTAssertFalse(try XCTUnwrap(isLoading))
-    }
-
-    func test_tappingAcceptSelectedClosesAfterSuccessfulFinish() {
-        sut.buttonTapped(type: .acceptSelected)
-
-        consentSolutionManager.completion?(nil)
-
-        XCTAssertTrue(router.closeAllCalled)
-        XCTAssertNil(router.closeAllError)
-    }
-
-    func test_tappingAcceptSelectedClosesWithErrorAfterError() {
-        sut.buttonTapped(type: .acceptSelected)
-
-        consentSolutionManager.completion?(sampleError)
-
-        XCTAssertTrue(router.closeAllCalled)
-        XCTAssertNotNil(router.closeAllError)
-    }
-
-    func test_tappingAcceptBeforeConsentSolutionIsLoaded_keepsPopUpOpenAndHidesLoader() {
-        // A tap racing the initial fetch must stay retryable: the pop-up must not
-        // be dismissed (that would drop the user's consent) and the loader must stop.
-        sut.buttonTapped(type: .acceptAll)
+        XCTAssertEqual(router.closeAllCallCount, 0)
 
         consentSolutionManager.completion?(ConsentSolutionManagerError.consentSolutionNotLoaded)
 
-        XCTAssertFalse(router.closeAllCalled)
         XCTAssertFalse(try XCTUnwrap(isLoading))
+    }
+
+    func test_postingCompletionKeepsViewModelAliveUntilItFinishes() {
+        sut.acceptAll()
+        weak var viewModel: PrivacyPopUpViewModel?
+        viewModel = sut
+        sut = nil
+
+        XCTAssertNotNil(viewModel)
+
+        do {
+            let completion = consentSolutionManager.completion
+            consentSolutionManager.completion = nil
+            completion?(nil)
+        }
+
+        XCTAssertNil(viewModel)
+        XCTAssertEqual(router.closeAllCallCount, 1)
+    }
+
+    private func assertSavePending(for action: (PrivacyPopUpViewModel) -> Void) {
+        action(sut)
+
+        XCTAssertNotNil(consentSolutionManager.completion)
+        XCTAssertEqual(router.closeAllCallCount, 0)
+        XCTAssertTrue(try XCTUnwrap(isLoading))
     }
 }
 
@@ -187,12 +167,10 @@ final class ConsentSolutionManagerMock: ConsentItemProviderMock, ConsentSolution
     var settings: [ConsentItem] { [] }
     var localizationOverride: [Locale: LabelText] = [:]
 
-    var areAllRequiredConsentItemsSelected = false
-    var hasRequiredConsentItems = true
-
     var loadConsentSolutionIfNeededCompletion: ((Result<ConsentSolution, Error>) -> Void)?
 
     var completion: ((Error?) -> Void)?
+    private(set) var acceptAllCallCount = 0
 
     func loadConsentSolutionIfNeeded(completion: @escaping (Result<ConsentSolution, Error>) -> Void) {
         loadConsentSolutionIfNeededCompletion = completion
@@ -203,20 +181,24 @@ final class ConsentSolutionManagerMock: ConsentItemProviderMock, ConsentSolution
     }
 
     func acceptAllConsentItems(completion: @escaping (Error?) -> Void) {
+        acceptAllCallCount += 1
         self.completion = completion
     }
 
     func acceptSelectedConsentItems(completion: @escaping (Error?) -> Void) {
         self.completion = completion
     }
+
 }
 
 final class RouterMock: RouterProtocol {
     private(set) var closeAllCalled = false
+    private(set) var closeAllCallCount = 0
     private(set) var closeAllError: Error?
 
     func closeAll(error: Error?) {
         closeAllCalled = true
+        closeAllCallCount += 1
         closeAllError = error
     }
 }

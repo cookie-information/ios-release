@@ -1,0 +1,112 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to release, for example 2.0.0
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+  RELEASE_VERSION: ${{ inputs.version }}
+  DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+
+jobs:
+  release:
+    name: Validate and release
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - name: Checkout default branch
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
+
+      - name: Validate version
+        run: |
+          if [[ ! "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Version must use the X.Y.Z format without a v prefix."
+            exit 1
+          fi
+
+          if git show-ref --verify --quiet "refs/tags/$RELEASE_VERSION"; then
+            echo "Tag $RELEASE_VERSION already exists."
+            exit 1
+          fi
+
+      - name: Update podspec version
+        run: |
+          ruby -e '
+            require "rubygems"
+            path = "MobileConsentsSDK.podspec"
+            version = ENV.fetch("RELEASE_VERSION")
+            source = File.read(path)
+            pattern = /spec\.version\s*=\s*['"'"']([^'"'"']+)['"'"']/
+            abort "Expected exactly one spec.version assignment" unless source.scan(pattern).one?
+            current_version = source.match(pattern)[1]
+            if Gem::Version.new(version) < Gem::Version.new(current_version)
+              abort "Version #{version} is older than #{current_version}"
+            end
+            File.write(path, source.sub(pattern, "spec.version      = '\''#{version}'\''"))
+          '
+
+          grep -F "spec.version      = '$RELEASE_VERSION'" MobileConsentsSDK.podspec
+
+      - name: Run SDK tests
+        run: |
+          xcodebuild test -quiet \
+            -scheme MobileConsentsSDK \
+            -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest' \
+            -derivedDataPath "$RUNNER_TEMP/MobileConsentsSDKTests" \
+            -parallel-testing-enabled NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Build Example
+        run: |
+          xcodebuild build \
+            -project Example/MobileConsentsSDK.xcodeproj \
+            -scheme Example \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/MobileConsentsSDKExample" \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Validate podspec
+        run: pod lib lint MobileConsentsSDK.podspec --allow-warnings
+
+      - name: Commit release version
+        run: |
+          if git diff --quiet -- MobileConsentsSDK.podspec; then
+            echo "MobileConsentsSDK.podspec already uses version $RELEASE_VERSION."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add MobileConsentsSDK.podspec
+          git commit -m "Release $RELEASE_VERSION"
+
+      - name: Push commit and tag
+        run: |
+          git tag -a "$RELEASE_VERSION" -m "Release $RELEASE_VERSION"
+          git push --atomic origin \
+            "HEAD:$DEFAULT_BRANCH" \
+            "refs/tags/$RELEASE_VERSION"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$RELEASE_VERSION" \
+            --verify-tag \
+            --title "$RELEASE_VERSION" \
+            --generate-notes

@@ -3,9 +3,11 @@
 
 ## Requirements
 - iOS 15.0 or newer
-- Swift 5.10 or newer (Xcode 15.3+)
+- Swift 6.2 or newer (Xcode 26+)
 
 > **Note:** Version 1.6.0 raises the minimum supported iOS version to 15.0. If your app needs to support older iOS versions, stay on version 1.5.9.
+
+When upgrading from 1.x, see [Migrating from 1.x to 2.0](MIGRATION.md).
 
 ## Installation
 ### Swift Package Manager
@@ -48,7 +50,7 @@ MobileConsents *mobileConsents = [[MobileConsents alloc] initWithUiLanguageCode:
                                                              accentColor: UIColor.systemBlueColor
                                                                  fontSet: FontSet.standard
                                                     localizationOverride: @{}
-                                                     enableNetworkLogger: YES];
+                                                     networkLoggingMode: NetworkLoggingModeRedactedRequestsAndResponses];
 ```
 
 # Using built-in mobile consents UI
@@ -63,43 +65,80 @@ If application's language is not available in translations, English will be used
 
 To show the Privacy Pop Up screen, use either `showPrivacyPopUp` (typically used in settings to allow for modification of the consent) or  `showPrivacyPopUpIfNeeded` (typically used at startup to present the privacy screen conditionally. See more below) method:
 
+Callback API:
+
 ```swift
 mobileConsentsSDK.showPrivacyPopUp() { settings in
-            settings.forEach { consent in
-                switch consent.purpose {
-                case .statistical: break
-                case .functional: break
-                case .marketing: break
-                case .necessary: break
-                case .custom:
-                    if consent.purposeDescription.lowercased() == "age consent" {
-                        // handle user defined consent items such as age consent
-                    }
-                    if consent.consentItem.id == "<UUID of consent item comes here>" {
-                      // handle user defined consent items such as age consent based on UUID
-                    }
-
-                @unknown default:
-                    break
-                }
-                print("Consent given for:\(consent.purpose): \(consent.isSelected)")
+    settings.forEach { consent in
+        switch consent.purpose {
+        case .statistical: break
+        case .functional: break
+        case .marketing: break
+        case .necessary: break
+        case .custom:
+            if consent.purposeDescription.lowercased() == "age consent" {
+                // Handle a user-defined consent item by name.
             }
+            if consent.consentItem.id == "<CONSENT_ITEM_ID>" {
+                // Handle a user-defined consent item by identifier.
+            }
+        @unknown default:
+            break
         }
+        print("Consent given for: \(consent.purpose): \(consent.isSelected)")
+    }
+} errorHandler: { error in
+    print("Failed to show the privacy pop-up: \(error.localizedDescription)")
+}
 ```
 
-The above function takes an optional completion block argument that should be used to react to the users consent and start or block various third-party SDKs.
+Async/await API:
+
+```swift
+do {
+    let settings = try await mobileConsentsSDK.showPrivacyPopUp()
+    settings.forEach { consent in
+        print("Consent given for: \(consent.purpose): \(consent.isSelected)")
+    }
+} catch {
+    print("Failed to show the privacy pop-up: \(error.localizedDescription)")
+}
+```
+
+The completion block runs after the selection is stored locally, before the popup dismissal starts. Use it to start or block third-party SDKs.
 
 By default, the pop up is presented by top view controller of key window of the application.
 To change that, you can pass presenting view controller as an optional parameter.
 
+The unconditional popup is presented before the SDK fetches and caches the consent solution. If fetching or caching fails, the SDK calls the error handler and dismisses the popup.
+
 ### Presenting the privacy pop-up conditionally
 
-The `showPrivacyPopUpIfNeeded` method is typically used to present the popup after app start (or at a point the developer deems appropriate). The method checks if a valid consent is already saved on the device and also checks if there are any updates on the Cookie Information server. In case there is no consent saved or the consent version is different from the one available on the server, the popup will be presented, otherwise only the completion closure is called. Using the `ignoreVersionChanges` parameter allows the developer to turn off the version checking mechanism and ignore consent version changes coming from the server.
+The `showPrivacyPopUpIfNeeded` method is typically used to present the popup after app start (or at a point the developer deems appropriate). It always fetches and caches the consent solution before checking whether a nonempty consent set is saved on the device and whether its solution version matches the fetched version. If fetching or caching fails, it calls the error handler and does not make a presentation decision. If the stored consent set is empty or the consent version differs, the popup is presented; otherwise only the completion closure is called. Using the `ignoreVersionChanges` parameter allows the developer to turn off version checking and ignore consent version changes from the server.
+
+Callback API:
 
 ```swift
-        mobileConsentsSDK.showPrivacyPopUpIfNeeded(ignoreVersionChanges: true) { settings in
-         // handle results here
-        }
+mobileConsentsSDK.showPrivacyPopUpIfNeeded(ignoreVersionChanges: true) { settings in
+    settings.forEach { consent in
+        print("Consent given for: \(consent.purpose): \(consent.isSelected)")
+    }
+} errorHandler: { error in
+    print("Failed to resolve the privacy pop-up: \(error.localizedDescription)")
+}
+```
+
+Async/await API:
+
+```swift
+do {
+    let settings = try await mobileConsentsSDK.showPrivacyPopUpIfNeeded()
+    settings.forEach { consent in
+        print("Consent given for: \(consent.purpose): \(consent.isSelected)")
+    }
+} catch {
+    print("Failed to resolve the privacy pop-up: \(error.localizedDescription)")
+}
 ```
 
 
@@ -122,15 +161,11 @@ Just like in Swift, the same methods are used to display the privacy pop-up, onl
 
 ### Handling errors
 
-Both the `showPrivacyPopUp` and `showPrivacyPopUpIfNeeded` can be passed a `errorHandler` closure that is called when an error occurs. After the `errorHandler` is called, the popup is dismissed by the router, the selection made by the user is persisted locally and an attempt is made the next time `showPrivacyPopUpIfNeeded` is called or if `synchronizeIfNeeded` method is called manually.
+Both `showPrivacyPopUp` and `showPrivacyPopUpIfNeeded` require a completion closure and an `errorHandler` closure. The error handler reports consent-solution fetch, presentation, submission creation, and local-persistence errors. It does not report background upload failures.
 
-```swift
-        mobileConsentsSDK.showPrivacyPopUpIfNeeded(ignoreVersionChanges: true) { settings in
-         // handle results here
-        } errorHandler: { err in
-            // handle the error here
-        }
-```
+After the user accepts or rejects the selection, the SDK verifies the local write and calls the completion block before starting the popup dismissal. If the local write fails, it calls the error handler instead.
+
+If an upload fails, the consent decision remains stored locally and the SDK retries it automatically. You can also call `synchronizeIfNeeded()` to request a retry.
 
 ## Styling
 
@@ -170,7 +205,6 @@ To start you need to create a new class inheriting from `UIViewController` and c
 
 After setting up your UI components and constraints you should set up the viewModel callback functions: 
 - `onDataLoaded: ((PrivacyPopUpData) -> Void)?` - which allows you to receive the data and configure the UI components. It is useful to keep a reference to the viewModel, because it contains functions to modify the state of the consent (consent given, or revoked), to save the consent, reject optional, or accept selection.
-- `onError: ((ErrorAlertModel) -> Void)?` - to receive notifications about errors
 - `onLoadingChange: ((Bool) -> Void)?` - to receive notifications about changes in the loading state (useful if you're using a spinner or similar progress indicator)
 
 ```swift
@@ -211,65 +245,172 @@ mobileConsentsSDK.showPrivacyPopUp(customViewType: CustomController.self) { sett
 ```
 
 To see a more complete implementation, please refer to the Example app and look for `CustomPopup.swift`
-## Sending Consent to server manually
 
-If you want to send consent to the server, first you have to create `Consent` object which structure looks like this:
+## Fetching the consent solution manually
+
+Use the callback API:
+
 ```swift
-var consent = Consent(consentSolutionId: "consentSolution.id", consentSolutionVersionId: "consentSolution.versionId")
+mobileConsentsSDK.fetchConsentSolution { result in
+    switch result {
+    case .success(let solution):
+        print("Loaded consent solution: \(solution.id)")
+    case .failure(let error):
+        print("Failed to load the consent solution: \(error.localizedDescription)")
+    }
+}
+```
 
-/* if you want your consent to have a custom data you can add it as a last parametr */
+Or use async/await:
+
+```swift
+do {
+    let solution = try await mobileConsentsSDK.fetchConsentSolution()
+    print("Loaded consent solution: \(solution.id)")
+} catch {
+    print("Failed to load the consent solution: \(error.localizedDescription)")
+}
+```
+
+## Saving consent manually
+
+Create a `Consent` value with the current submitted decision:
+```swift
 let customData = ["email": "test@test.com", "device_id": "test_device_id"]
-var consent = Consent(consentSolutionId: "consentSolution.id", consentSolutionVersionId: "consentSolution.versionId" customData: customData)
+var consent = Consent(
+  consentSolutionId: "consentSolution.id",
+  consentSolutionVersionId: "consentSolution.versionId",
+  customData: customData,
+  userConsents: []
+)
 
 ```
-Then you have to add processing purposes which contains a given consents
+Add processing purposes when you do not provide `userConsents`:
 
 ```swift
-/* given consents are included in main consent object as ProcessingPurpose objects which you can add to Consent object using `addProcessingPurpose` function */
-
-let purpose = ProcessingPurpose(consentItemId: "consentItem.id", consentGiven: {true / false}, language: "en")
+let purpose = ProcessingPurpose(
+  consentItemId: "consentItem.id",
+  consentGiven: true,
+  language: "en"
+)
 consent.addProcessingPurpose(purpose)
 
 ```
-After setting up the Consent object you are ready to send it to the server
+The callback reports whether verified local persistence succeeded. A successful callback does not mean the server upload has finished.
+
 ```swift
 mobileConsentsSDK.postConsent(consent) { error in
-  /* if error is nil it means that post succeeded */
+  guard error == nil else {
+    // Handle a local-persistence error.
+    return
+  }
+  // The submitted decision is stored locally. Pending decisions synchronize independently.
+}
+```
+
+The async API has the same semantics:
+
+```swift
+do {
+    try await mobileConsentsSDK.postConsent(consent)
+    print("The consent was stored locally.")
+} catch {
+    print("Failed to store the consent: \(error.localizedDescription)")
 }
 ```
 
 ## Getting locally saved consents data
+
+The synchronous compatibility API returns an empty array when the local store cannot be read:
+
 ```swift
-let savedData:[SavedConsent] = mobileConsentsSDK.getSavedConsents()
+let savedData = mobileConsentsSDK.getSavedConsents()
 ```
-SavedConsent object structure
+
+The async API reports read errors:
+
 ```swift
-struct  SavedConsent {
-  let  consentItemId: String
-  let  consentGiven: Bool
+do {
+    let savedData = try await mobileConsentsSDK.loadSavedConsents()
+    print("Loaded \(savedData.count) saved consents.")
+} catch {
+    print("Failed to load saved consents: \(error.localizedDescription)")
 }
 ```
 
-## Canceling last post to server request
+The synchronous compatibility property returns an empty string when the local store cannot be read:
+
 ```swift
-mobileConsentsSDK.cancel()
+let userID = mobileConsentsSDK.userId
+```
+
+The async API reports read errors:
+
+```swift
+do {
+    let userID = try await mobileConsentsSDK.getUserId()
+    print("User identifier: \(userID)")
+} catch {
+    print("Failed to load the user identifier: \(error.localizedDescription)")
+}
+```
+
+The synchronous compatibility API ignores local-persistence errors:
+
+```swift
+mobileConsentsSDK.removeStoredConsents()
+```
+
+The async API confirms local removal and reports persistence errors:
+
+```swift
+do {
+    try await mobileConsentsSDK.clearStoredConsents()
+    print("Stored consents were removed.")
+} catch {
+    print("Failed to remove stored consents: \(error.localizedDescription)")
+}
+```
+
+Objective-C imports the async methods as `loadSavedConsentsWithCompletionHandler:`, `getUserIdWithCompletionHandler:`, and `removeStoredConsentsWithCompletionHandler:`. The synchronous `userId`, `getSavedConsents()`, and `removeStoredConsents()` APIs remain available.
+
+## Synchronizing pending consent
+
+Use the fire-and-forget API when you do not need the result:
+
+```swift
+mobileConsentsSDK.synchronizeIfNeeded()
+```
+
+Use async/await to check whether a pending consent remains after the attempt:
+
+```swift
+let pendingRemains: Bool = await mobileConsentsSDK.synchronizeIfNeeded()
 ```
 
 ## Logging
 
-The SDK can be configured to print the network events in the console. These events include all network requests, responses and errors. By default this option is disabled to keep the unnecessary clutter out of the console, however in case of unexpected behaviour or to verify that everything works as expected it can be switched on in the SDK initializer.
+Network logging uses Apple's unified logging system and is disabled by default.
+
+- `metadata` records request methods, redacted URLs, response status codes, and request identifiers.
+- `redactedRequestsAndResponses` additionally records sanitized headers and payload sizes. Query parameters, credentials, authorization values, cookies, and payload contents are not logged.
+- `fullRequests` records complete request URLs, headers, and payloads, while responses remain limited to metadata.
+- `fullRequestsAndResponses` records the complete network exchange.
+
+The full logging modes may expose `clientSecret`, access tokens, consent choices, identifiers, and custom data. Enable them only for controlled diagnostics and never in production builds.
 
 ```swift 
 import MobileConsentsSDK
 
-let mobileConsentsSDK = MobileConsents(clientID: "<CLIENT_ID>",
-clientSecret: "<CLIENT_SECRET>",
-solutionId: "<SOLUTION ID>",
-enableNetworkLogger: true
+let mobileConsentsSDK = MobileConsents(
+    clientID: "<CLIENT_ID>",
+    clientSecret: "<CLIENT_SECRET>",
+    solutionId: "<SOLUTION ID>",
+    networkLoggingMode: .redactedRequestsAndResponses
 )
 ```
 ## Displaying the device identifier
-All consents sent to the Cookie Information servers are identified by a unique device identifier that is generated randomly after opening the privacy popup for the first time. This ID is necessary for Cookie Information to retrieve consents saved by the end user. 
+All consents sent to the Cookie Information servers are identified by a unique device identifier that is generated randomly on first SDK access. This ID is necessary for Cookie Information to retrieve consents saved by the end user.
 
 During normal operation the identifier is not required, however in case the end user wants to access their saved consents, it is only possible if they provide the above mentioned identifier. When using the default user interface, the device identifier can be located at the bottom of the privacy policy page (after tapping "read more"). It can be copied to the clipboard by tapping the text and selecting the appropriate button from the action sheet.
 

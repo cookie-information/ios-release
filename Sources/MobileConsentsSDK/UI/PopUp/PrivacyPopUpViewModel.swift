@@ -32,6 +32,7 @@ public final class PrivacyPopUpViewModel: NSObject, PrivacyPopUpViewModelProtoco
     var router: RouterProtocol?
     
     private let consentSolutionManager: ConsentSolutionManagerProtocol
+    private var isSubmitting = false
     init(consentSolutionManager: ConsentSolutionManagerProtocol, accentColor: UIColor, fontSet: FontSet) {
         self.consentSolutionManager = consentSolutionManager
         self.accentColor = accentColor
@@ -110,10 +111,11 @@ public final class PrivacyPopUpViewModel: NSObject, PrivacyPopUpViewModelProtoco
             }
     }
     
-    private func handlePostingConsent(buttonType: PopUpButtonViewModel.ButtonType, error: Error?) {
+    private func handlePostingConsent(error: Error?) {
         onLoadingChange?(false)
 
         if let error = error as? ConsentSolutionManagerError, case .consentSolutionNotLoaded = error {
+            isSubmitting = false
             return
         }
 
@@ -121,50 +123,36 @@ public final class PrivacyPopUpViewModel: NSObject, PrivacyPopUpViewModelProtoco
     }
 }
 
-extension PrivacyPopUpViewModel: PopUpButtonViewModelDelegate {
-    func buttonTapped(type: PopUpButtonViewModel.ButtonType) {
-        switch type {
-        case .privacyCenter:
-            break
-        case .rejectAll:
-            onLoadingChange?(true)
-            consentSolutionManager.rejectAllConsentItems { [weak self] error in
-                self?.handlePostingConsent(buttonType: type, error: error)
-            }
-        case .acceptAll:
-            onLoadingChange?(true)
-            consentSolutionManager.acceptAllConsentItems { [weak self] error in
-                self?.handlePostingConsent(buttonType: type, error: error)
-            }
-        case .acceptSelected:
-            onLoadingChange?(true)
-            consentSolutionManager.acceptSelectedConsentItems { [weak self] error in
-                self?.handlePostingConsent(buttonType: type, error: error)
-            }
-        }
-    }
-    
+extension PrivacyPopUpViewModel {
     @objc
     public func acceptAll() {
-        onLoadingChange?(true)
-        consentSolutionManager.acceptAllConsentItems { [weak self] error in
-            self?.handlePostingConsent(buttonType: .acceptAll, error: error)
+        submit { completion in
+            consentSolutionManager.acceptAllConsentItems(completion: completion)
         }
     }
     
     @objc
     public func rejectAll() {
-        onLoadingChange?(true)
-        consentSolutionManager.rejectAllConsentItems { [weak self] error in
-            self?.handlePostingConsent(buttonType: .rejectAll, error: error)
+        submit { completion in
+            consentSolutionManager.rejectAllConsentItems(completion: completion)
         }
     }
     
     @objc
     public func acceptSelected() {
+        submit { completion in
+            consentSolutionManager.acceptSelectedConsentItems(completion: completion)
+        }
+    }
+
+    private func submit(_ submitConsent: (@escaping (Error?) -> Void) -> Void) {
+        guard !isSubmitting else { return }
+
+        isSubmitting = true
         onLoadingChange?(true)
-        consentSolutionManager.acceptSelectedConsentItems { [weak self] error in
-            self?.handlePostingConsent(buttonType: .acceptSelected, error: error)
+
+        submitConsent { error in
+            self.handlePostingConsent(error: error)
         }
     }
 }

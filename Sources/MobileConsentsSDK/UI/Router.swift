@@ -1,9 +1,11 @@
 import UIKit
 
+@MainActor
 protocol RouterProtocol {
     func closeAll(error: Error?)
 }
 
+@MainActor
 final class Router: RouterProtocol {
     weak var rootViewController: UIViewController?
 
@@ -43,12 +45,13 @@ final class Router: RouterProtocol {
 
         defer { rootViewController?.dismiss(animated: true) }
 
-        if let error = error {
-            self.errorHandler?(error)
+        if let error {
+            errorHandler?(error)
             return
         }
-        completion?(consentSolutionManager.settings.map {UserConsent(consentItem: $0,
-                                                                     isSelected: self.consentSolutionManager.isConsentItemSelected(id: $0.id) || $0.required)})
-       
+        completion?(consentSolutionManager.settings.map {
+            UserConsent(consentItem: $0,
+                        isSelected: consentSolutionManager.isConsentItemSelected(id: $0.id) || $0.required)
+        })
     }
 }

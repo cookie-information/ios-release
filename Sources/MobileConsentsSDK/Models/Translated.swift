@@ -15,7 +15,16 @@ public struct Translated<T: Translation & Codable & Equatable>: Codable, Equatab
     }
     
     public init(from decoder: Decoder) throws {
-        self.translations = try [T](from: decoder)
+        let translations = try [T](from: decoder)
+        guard !translations.isEmpty else {
+            throw DecodingError.dataCorrupted(
+                DecodingError.Context(
+                    codingPath: decoder.codingPath,
+                    debugDescription: "Expected at least one translation."
+                )
+            )
+        }
+        self.translations = translations
         self.primaryLanguage = decoder.userInfo[primaryLanguageCodingUserInfoKey] as? String ?? "EN"
     }
     
@@ -33,3 +42,5 @@ public struct Translated<T: Translation & Codable & Equatable>: Codable, Equatab
         translation(with: primaryLanguage) ?? translations.first!
     }
 }
+
+extension Translated: Sendable where T: Sendable {}

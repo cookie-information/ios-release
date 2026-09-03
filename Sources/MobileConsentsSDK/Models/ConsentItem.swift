@@ -1,4 +1,4 @@
-public enum ConsentItemType: String,  Codable, Equatable {
+public enum ConsentItemType: String,  Codable, Equatable, Sendable {
     case functional
     case necessary
     case statistical
@@ -11,7 +11,7 @@ public enum ConsentItemType: String,  Codable, Equatable {
     }
 }
 
-public struct ConsentItem: Codable, Equatable {
+public struct ConsentItem: Codable, Equatable, Sendable {
     public let id: String
     public let required: Bool
     public let type: ConsentItemType

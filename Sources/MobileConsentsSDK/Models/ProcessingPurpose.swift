@@ -1,4 +1,4 @@
-public struct ProcessingPurpose: Codable {
+public struct ProcessingPurpose: Codable, Sendable {
     public let consentItemId: String
     public let consentGiven: Bool
     public let language: String

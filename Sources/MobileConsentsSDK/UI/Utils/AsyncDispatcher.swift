@@ -4,8 +4,8 @@ protocol AsyncDispatcher {
     func async(execute work: @escaping () -> Void)
 }
 
-extension DispatchQueue: AsyncDispatcher {
+final class MainThreadAsyncDispatcher: AsyncDispatcher {
     func async(execute work: @escaping () -> Void) {
-        async(group: nil, qos: .unspecified, flags: [], execute: work)
+        DispatchQueue.main.async(execute: DispatchWorkItem(block: work))
     }
 }

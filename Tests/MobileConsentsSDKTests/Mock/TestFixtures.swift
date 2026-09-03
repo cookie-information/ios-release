@@ -17,7 +17,16 @@ func userConsent(consentItemId: String, isSelected: Bool) -> UserConsent {
             id: consentItemId,
             required: false,
             type: .functional,
-            translations: Translated(translations: [], primaryLanguage: nil)
+            translations: Translated(
+                translations: [
+                    ConsentTranslation(
+                        language: "EN",
+                        shortText: "Consent",
+                        longText: "Consent details"
+                    )
+                ],
+                primaryLanguage: nil
+            )
         ),
         isSelected: isSelected
     )

@@ -1,28 +1,25 @@
 import UIKit
 
-protocol MobileConsentsProtocol {
-    func fetchConsentSolution(completion: @escaping (Result<ConsentSolution, Error>) -> Void)
-    func postConsent(_ consent: Consent, completion: @escaping (Error?) -> Void)
-    func getSavedConsents() -> [UserConsent]
-}
-
 @objc
-public final class MobileConsents: NSObject, MobileConsentsProtocol {
-    private let networkManager: NetworkManager
-    private var localStorageManager: LocalStorageManager
-    
-    private let accentColor: UIColor
-    private let fontSet: FontSet
-    private let solutionId: String
-    
-    private var localizationOverride: [Locale: LabelText]
-    
+public final class MobileConsents: NSObject, ConsentSolutionClient {
     public typealias ConsentSolutionCompletion = (Result<ConsentSolution, Error>) -> ()
+
+    // MARK: - Properties
+
+    private let store: ConsentStore
+    private let consentCore: ConsentCore
+    private let synchronizationCoordinator: ConsentSynchronizationCoordinator
+    private let privacyPopupCoordinator: PrivacyPopupCoordinator
+    private let requestDispatcher = MainActorRequestDispatcher()
     
-    /// Unique identifier of the user in Cookie Information records. This ID is assigned upon first run of the SDK
-    public var userId: String {
-        localStorageManager.userId
+    /// Unique identifier assigned to the user on first access.
+    /// Returns an empty string if local persistence cannot be read.
+    @objc public var userId: String {
+        store.userId
     }
+
+    // MARK: - Initialization
+
     /// MobileConsents class initializer.
     ///
     /// - Parameters:
@@ -33,7 +30,12 @@ public final class MobileConsents: NSObject, MobileConsentsProtocol {
     ///   - accentColor: determines the tint of the colored elements, such as buttons in the default UI
     ///   - fontSet: overrides the system font. Make sure to test thoroughly when chosing your own font to prevent visual issues in your app
     ///   - localizationOverride: a dictionary of Locale (key) and LabelText (value) used to override static UI translations
-    ///   - enableNetworkLogger: a flag that turns on the network logger, it is used for debugging purposes, it should be off for production buildst
+    ///   - enableNetworkLogger: A compatibility flag that records redacted requests and responses when enabled.
+    @available(
+        *,
+        deprecated,
+        renamed: "init(uiLanguageCode:clientID:clientSecret:solutionId:accentColor:fontSet:localizationOverride:networkLoggingMode:)"
+    )
     @objc public convenience init(uiLanguageCode: String? = Bundle.main.preferredLocalizations.first,
                                   clientID: String,
                                   clientSecret: String,
@@ -41,192 +43,321 @@ public final class MobileConsents: NSObject, MobileConsentsProtocol {
                                   accentColor: UIColor? = nil,
                                   fontSet: FontSet = .standard,
                                   localizationOverride: [Locale: LabelText] = [:],
-                                  enableNetworkLogger: Bool = false) {
-        
-        self.init(localStorageManager: LocalStorageManager(),
-                  uiLanguageCode: uiLanguageCode,
-                  clientID: clientID,
-                  clientSecret: clientSecret,
-                  solutionID: solutionId,
-                  accentColor: accentColor,
-                  fontSet: fontSet,
-                  localizationOverride: localizationOverride,
-                  enableNetworkLogger: enableNetworkLogger)
-    }
-    
-    init(localStorageManager: LocalStorageManager, uiLanguageCode: String?, clientID: String, clientSecret: String, solutionID: String, accentColor: UIColor?, fontSet: FontSet, localizationOverride: [Locale: LabelText] = [:], enableNetworkLogger: Bool) {
-        let jsonDecoder = JSONDecoder()
-        jsonDecoder.userInfo[primaryLanguageCodingUserInfoKey] = uiLanguageCode
-        
-        self.accentColor = accentColor ?? .systemBlue
-        self.fontSet = fontSet
-        self.networkManager = NetworkManager(
-            jsonDecoder: jsonDecoder,
-            localStorageManager: localStorageManager,
+                                  enableNetworkLogger: Bool) {
+        self.init(
+            uiLanguageCode: uiLanguageCode,
             clientID: clientID,
             clientSecret: clientSecret,
-            solutionID: solutionID,
-            enableNetworkLogger: enableNetworkLogger
+            solutionId: solutionId,
+            accentColor: accentColor,
+            fontSet: fontSet,
+            localizationOverride: localizationOverride,
+            networkLoggingMode: enableNetworkLogger
+                ? .redactedRequestsAndResponses
+                : .disabled
         )
-        self.localStorageManager = localStorageManager
-        self.solutionId = solutionID
-        self.localizationOverride = localizationOverride
     }
-    
+
+    /// Creates a Mobile Consents client.
+    ///
+    /// - Parameters:
+    ///   - uiLanguageCode: Language code used for translations in built-in privacy screens.
+    ///   - clientID: The client identifier obtained from the Cookie Information dashboard.
+    ///   - clientSecret: The client secret obtained from the Cookie Information dashboard.
+    ///   - solutionId: The solution identifier obtained from the Cookie Information dashboard.
+    ///   - accentColor: The tint color used by the default UI.
+    ///   - fontSet: Fonts used by the default UI.
+    ///   - localizationOverride: Static UI translation overrides.
+    ///   - networkLoggingMode: The network diagnostics recorded in the system log.
+    @objc public convenience init(
+        uiLanguageCode: String? = Bundle.main.preferredLocalizations.first,
+        clientID: String,
+        clientSecret: String,
+        solutionId: String,
+        accentColor: UIColor? = nil,
+        fontSet: FontSet = .standard,
+        localizationOverride: [Locale: LabelText] = [:],
+        networkLoggingMode: NetworkLoggingMode = .disabled,
+    ) {
+        let store = ConsentStore(
+            solutionID: solutionId,
+            clientID: clientID,
+            clientSecret: clientSecret
+        )
+        self.init(
+            store: store,
+            transport: URLSessionHTTPTransport(networkLoggingMode: networkLoggingMode),
+            uiLanguageCode: uiLanguageCode,
+            clientID: clientID,
+            clientSecret: clientSecret,
+            solutionID: solutionId,
+            accentColor: accentColor,
+            fontSet: fontSet,
+            localizationOverride: localizationOverride
+        )
+    }
+
+    init(
+        store: ConsentStore,
+        transport: any HTTPTransport,
+        uiLanguageCode: String?,
+        clientID: String,
+        clientSecret: String,
+        solutionID: String,
+        accentColor: UIColor?,
+        fontSet: FontSet,
+        localizationOverride: [Locale: LabelText] = [:],
+        networkEnvironment: NetworkEnvironment = .production,
+    ) {
+        self.store = store
+        let effectiveLanguage = uiLanguageCode ?? "EN"
+        let consentCore = ConsentCore(
+            solutionID: solutionID,
+            networkCore: NetworkCore(
+                transport: transport,
+                primaryLanguage: effectiveLanguage,
+                environment: networkEnvironment,
+            ),
+            store: store,
+            clientID: clientID,
+            clientSecret: clientSecret,
+            platformInformation: { PlatformInformationGenerator().generatePlatformInformation() }
+        )
+        self.consentCore = consentCore
+        self.synchronizationCoordinator = ConsentSynchronizationCoordinator(core: consentCore)
+        self.privacyPopupCoordinator = PrivacyPopupCoordinator(
+            core: consentCore,
+            localizationOverride: localizationOverride,
+            accentColor: accentColor ?? .systemBlue,
+            fontSet: fontSet
+        )
+        super.init()
+        scheduleSynchronization()
+    }
+
+    // MARK: - Consent solution
+
     /// Method responsible for fetching Consent Solutions.
     ///
     /// - Parameters:
     ///   - completion: callback - (Result<ConsentSolution, Error>) -> Void
     public func fetchConsentSolution(completion:@escaping ConsentSolutionCompletion) {
-        networkManager.getConsentSolution(completion: completion)
+        requestDispatcher.dispatch(
+            FetchConsentSolutionRequest(
+                core: consentCore,
+                completion: completion
+            )
+        )
     }
-    
-    /// Method responsible for posting Consent to server.
-    ///
-    /// - Parameters:
-    ///   - consent: Consent object which will be send to server
-    ///   - completion: callback - (Error?) -> Void)
-    public func postConsent(_ consent: Consent, completion:@escaping (Error?) -> Void) {
-        networkManager.postConsent(consent) {[weak self] error in
-            self?.saveConsentResult(consent)
-            if let error = error {
-                self?.localStorageManager.consentsInSync = false
-                completion(error)
-            } else {
-                self?.localStorageManager.consentsInSync = true
-                completion(nil)
-            }
-            
+
+    /// Fetches the configured consent solution.
+    @_disfavoredOverload @nonobjc public func fetchConsentSolution() async throws -> ConsentSolution {
+        do {
+            return ConsentSolution(try await consentCore.fetchConsentSolution())
+        } catch {
+            throw LegacyNetworkErrorAdapter.adapt(error)
         }
     }
-    
-    /// Method responsible for getting saved locally consents.
+
+    // MARK: - Consent submission
+
+    /// Stores consent locally and schedules independent server synchronization.
     ///
-    /// Returns array of SavedConsent object
-    public func getSavedConsents() -> [UserConsent] {
-        localStorageManager.consents.map {$0.value}
+    /// - Parameters:
+    ///   - consent: The complete consent decision to store.
+    ///   - completion: Called on the main actor after local persistence succeeds or fails.
+    ///     A `nil` error does not mean that server synchronization has finished.
+    public func postConsent(_ consent: Consent, completion:@escaping (Error?) -> Void) {
+        requestDispatcher.dispatch(
+            SaveConsentRequest(
+                core: consentCore,
+                submission: ConsentSubmissionValue(consent),
+                synchronizationCoordinator: synchronizationCoordinator,
+                completion: completion
+            )
+        )
     }
-    
-    /// Method responsible for canceling last post consent request.
+
+    /// Stores consent locally and schedules independent server synchronization.
     ///
-    public func cancel() {
-        networkManager.cancel()
+    /// This method returns after verified local persistence. It does not wait for the server.
+    @_disfavoredOverload @nonobjc public func postConsent(_ consent: Consent) async throws {
+        do {
+            try await consentCore.saveConsent(ConsentSubmissionValue(consent))
+        } catch {
+            throw LegacyNetworkErrorAdapter.adapt(error)
+        }
+        let synchronizationCoordinator = synchronizationCoordinator
+        Task<Void, Never>(
+            name: "MobileConsentsSDK.MobileConsents.asyncConsentSave.synchronize"
+        ) {
+            _ = await synchronizationCoordinator.synchronizeIfNeeded()
+        }
     }
+
+    // MARK: - Stored consents
     
-    
+    /// Returns the unique identifier assigned to the user on first access.
+    @objc public func getUserId() async throws -> String {
+        try await consentCore.userID()
+    }
+
+    /// Returns locally saved consents.
+    /// Returns an empty array if local persistence cannot be read.
+    @objc public func getSavedConsents() -> [UserConsent] {
+        store.consents.values.map(UserConsent.init)
+    }
+
+    /// Returns locally saved consents.
+    @objc public func loadSavedConsents() async throws -> sending [UserConsent] {
+        try await consentCore.loadSavedConsents().map(UserConsent.init)
+    }
+
+    /// Removes all stored consents from the device. Consents stored in the Cookie Information database persist.
+    @objc public func removeStoredConsents() {
+        do {
+            try store.clearAll()
+        } catch {
+            return
+        }
+    }
+
+    /// Removes all stored consents from the device after confirming local persistence.
+    @objc(removeStoredConsentsWithCompletionHandler:)
+    public func clearStoredConsents() async throws {
+        try await consentCore.removeStoredConsents()
+    }
+
+    // MARK: - Privacy popup
+
     /// Method responsible for showing Privacy Pop Up screen
     /// - Parameters:
     ///   - customViewType: the type of the custom view controller that is to be presented instead of the built in one. E.g. `MyCustomVC.self`
-    ///   - onViewController: UIViewController to present pop up on. If not provided, top-most presented view controller of key window of the application is used.
+    ///   - presentingViewController: UIViewController to present pop up on. If not provided, top-most presented view controller of key window of the application is used.
     ///   - animated: If presentation should be animated. Defaults to `true`.
-    ///   - completion: called after the user closes the privacy popup.
-    ///   - errorHandler: called upon ecountering an error
+    ///   - completion: Required callback called after the user closes the privacy popup successfully.
+    ///   - errorHandler: Required callback called when fetching, presentation, submission creation, or local persistence fails.
     @objc public func showPrivacyPopUp(
         customViewType: PrivacyPopupProtocol.Type? = nil,
         onViewController presentingViewController: UIViewController? = nil,
         animated: Bool = true,
-        completion: (([UserConsent])->())? = nil,
-        errorHandler: ((Error)->())? = nil
+        completion: @escaping ([UserConsent]) -> Void,
+        errorHandler: @escaping (Error) -> Void
     ) {
-        synchronizeIfNeeded()
-        presentPrivacyPopUp(
-            customViewType: customViewType,
-            onViewController: presentingViewController,
-            animated: animated,
-            completion: completion,
-            errorHandler: errorHandler
-        )
-    }
-    
-    
-    private func presentPrivacyPopUp(
-        customViewType: PrivacyPopupProtocol.Type? = nil,
-        onViewController presentingViewController: UIViewController? = nil,
-        animated: Bool = true,
-        completion: (([UserConsent])->())? = nil,
-        errorHandler: ((Error)->())? = nil
-    ) {
-        DispatchQueue.main.async {
-            let windowScenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
-            let keyWindow = windowScenes.first { $0.activationState == .foregroundActive }?.keyWindow
-                ?? windowScenes.compactMap(\.keyWindow).first
-            let presentingViewController = presentingViewController ?? keyWindow?.topViewController
-            
-            let consentSolutionManager = ConsentSolutionManager(
-                consentSolutionId: self.solutionId,
+        scheduleSynchronization()
+        requestDispatcher.dispatch(
+            ShowPrivacyPopupRequest(
+                coordinator: privacyPopupCoordinator,
                 mobileConsents: self,
-                localizationOverride: self.localizationOverride
-                )
-            
-            let router = Router(consentSolutionManager: consentSolutionManager, accentColor: self.accentColor, fontSet: self.fontSet)
-            router.rootViewController = presentingViewController
-           
-            router.showPrivacyPopUp(popupController: customViewType, animated: animated, completion: completion, error: errorHandler)
-        }
+                customViewType: customViewType,
+                presentingViewController: presentingViewController,
+                animated: animated,
+                completion: completion,
+                errorHandler: errorHandler
+            )
+        )
     }
     
     /// Method responsible for showing Privacy Pop Up screen if there has not been a consent recorded or if the consent
     /// - Parameters:
     ///   - customViewType: the type of the custom view controller that is to be presented instead of the built in one. E.g. `MyCustomVC.self`
-    ///   - onViewController: UIViewController to present pop up on. If not provided, top-most presented view controller of key window of the application is used.
+    ///   - presentingViewController: UIViewController to present pop up on. If not provided, top-most presented view controller of key window of the application is used.
     ///   - animated: If presentation should be animated. Defaults to `true`.
     ///   - ignoreVersionChanges: if set to `true` the SDK will ignore changes made to the consent solution in the Cookie Information web interface
-    ///   - completion: called after the user closes the privacy popup.
-    ///   - errorHandler: called upon ecountering an error
+    ///   - completion: Required callback called when the workflow completes successfully.
+    ///   - errorHandler: Required callback called when fetching, presentation, submission creation, or local persistence fails.
     @objc public func showPrivacyPopUpIfNeeded(
         customViewType: PrivacyPopupProtocol.Type? = nil,
         onViewController presentingViewController: UIViewController? = nil,
         animated: Bool = true,
         ignoreVersionChanges: Bool = false,
-        completion: (([UserConsent])->())? = nil,
-        errorHandler: ((Error)->())? = nil
+        completion: @escaping ([UserConsent]) -> Void,
+        errorHandler: @escaping (Error) -> Void
     ) {
-        synchronizeIfNeeded()
-        self.fetchConsentSolution { result in
-            guard case let .success(value) = result else {
-                completion?([])
-                return
-            }
-            
-            let storedConsents = self.localStorageManager.consents
-            let versionId = value.versionId
-            let storedVersionId = self.localStorageManager.versionId
-            
-            guard !storedConsents.isEmpty && (storedVersionId == versionId || ignoreVersionChanges) else {
-                self.removeStoredConsents()
-                self.presentPrivacyPopUp(customViewType: customViewType, completion: completion, errorHandler: errorHandler)
-                return
-            }
-            
-            let userConsents = storedConsents.map(\.value)
-            completion?(userConsents)
-        }
-        
+        scheduleSynchronization()
+        requestDispatcher.dispatch(
+            ShowPrivacyPopupIfNeededRequest(
+                coordinator: privacyPopupCoordinator,
+                mobileConsents: self,
+                customViewType: customViewType,
+                presentingViewController: presentingViewController,
+                animated: animated,
+                ignoreVersionChanges: ignoreVersionChanges,
+                completion: completion,
+                errorHandler: errorHandler
+            )
+        )
+
     }
     
-    
-    /// Synchronizes previously failed uploads with the Cookie Information server if they exist
+    /// Presents the privacy popup and returns the locally stored decision.
+    ///
+    /// - Parameters:
+    ///   - customViewType: The custom view controller type to present instead of the built-in popup.
+    ///   - presentingViewController: The view controller used for presentation. The SDK uses the top-most view controller when omitted.
+    ///   - animated: Whether the presentation is animated.
+    @_disfavoredOverload @MainActor @nonobjc public func showPrivacyPopUp(
+        customViewType: PrivacyPopupProtocol.Type? = nil,
+        onViewController presentingViewController: UIViewController? = nil,
+        animated: Bool = true
+    ) async throws -> sending [UserConsent] {
+        scheduleSynchronization()
+        return try await privacyPopupCoordinator.presentAndWait(
+            mobileConsents: self,
+            customViewType: customViewType,
+            onViewController: presentingViewController,
+            animated: animated,
+            loadedContext: nil
+        )
+    }
+
+    /// Presents the privacy popup when required and returns the locally stored decision.
+    ///
+    /// - Parameters:
+    ///   - customViewType: The custom view controller type to present instead of the built-in popup.
+    ///   - presentingViewController: The view controller used for presentation. The SDK uses the top-most view controller when omitted.
+    ///   - animated: Whether the presentation is animated.
+    ///   - ignoreVersionChanges: Whether changes to the consent-solution version should be ignored.
+    @_disfavoredOverload @MainActor @nonobjc public func showPrivacyPopUpIfNeeded(
+        customViewType: PrivacyPopupProtocol.Type? = nil,
+        onViewController presentingViewController: UIViewController? = nil,
+        animated: Bool = true,
+        ignoreVersionChanges: Bool = false
+    ) async throws -> sending [UserConsent] {
+        scheduleSynchronization()
+        do {
+            return try await privacyPopupCoordinator.resolveIfNeeded(
+                mobileConsents: self,
+                customViewType: customViewType,
+                onViewController: presentingViewController,
+                animated: animated,
+                ignoreVersionChanges: ignoreVersionChanges
+            )
+        } catch {
+            throw LegacyNetworkErrorAdapter.adapt(error)
+        }
+    }
+
+    // MARK: - Synchronization
+
+    /// Requests synchronization of pending consents, if any exist.
     public func synchronizeIfNeeded() {
-        if !localStorageManager.consentsInSync, let versionId = localStorageManager.versionId  {
-            let consent = Consent(consentSolutionId: self.solutionId, consentSolutionVersionId: versionId, userConsents: localStorageManager.consents.map {$0.value})
-            postConsent(consent, completion: {_ in })
+        scheduleSynchronization()
+    }
+
+    private func scheduleSynchronization() {
+        let synchronizationCoordinator = synchronizationCoordinator
+        Task<Void, Never>(
+            name: "MobileConsentsSDK.MobileConsents.synchronize"
+        ) {
+            _ = await synchronizationCoordinator.synchronizeIfNeeded()
         }
     }
-    
-    /// Removes all stored consents from the device. Consents stored in the Cookie Information database persist.
-    public func removeStoredConsents() {
-        localStorageManager.clearAll()
-    }
-    
-    public func setCustomLabels() {
-        
+
+    /// Attempts to synchronize pending consents.
+    ///
+    /// - Returns: `true` when a pending consent remains after the attempt.
+    @_disfavoredOverload @nonobjc public func synchronizeIfNeeded() async -> Bool {
+        await synchronizationCoordinator.synchronizeIfNeeded()
     }
 }
-
-extension MobileConsents {
-    func saveConsentResult(_ consent: Consent) {
-        let consents = consent.userConsents
-        localStorageManager.addConsentsArray(consents, versionId: consent.consentSolutionVersionId)
-    }
-}
-
